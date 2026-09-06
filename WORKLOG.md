@@ -120,3 +120,48 @@ as observed context rather than assigned a retrospective timestamp.
   inventory, worklog, and ignore rules as a documentation milestone.
 - Confirmed the repository author identity and destination branch. Local planning
   and requirement-source files remain excluded; implementation has not started.
+
+## 2026-09-06 22:13:58 UTC — Maven and JUnit scaffold
+
+- Confirmed JDK 21 is available and Maven is not installed globally.
+- Added a Java 21 Maven project with test-scoped JUnit Jupiter and pinned compiler
+  and Surefire plugins, plus the official script-only Maven Wrapper.
+- Added source/test directories, ignored build output, and documented commands,
+  current implementation status, report semantics, and build version choices.
+- Ledger behavior and domain tests remain unimplemented; build validation follows.
+
+## 2026-09-06 22:17:42 UTC — Build scaffold verified
+
+- Verified Maven Wrapper launches Maven 3.9.16 on the available JDK 21.
+- A temporary parameterized Jupiter smoke test compiled and ran three cases with
+  no failures, confirming test discovery and execution. Removed the smoke test
+  after verification so the baseline contains no library-only demonstration tests.
+- Ran `./mvnw -B -ntp clean verify` successfully on the final scaffold. No domain
+  tests exist yet; missing compiler output and empty-JAR warnings are expected
+  until implementation adds production sources.
+- Checked whitespace and ignore rules. Build output and local planning/reference
+  files remain excluded. No setup commit or push performed.
+
+## 2026-09-06 22:24:26 UTC — Numerical inventory scope refined
+
+- Removed build versions and scenario-specific amounts, counts, and dates from
+  the numerical inventory. Retained numerical business rules and a section for
+  any future implementation limits or tuning constants.
+- Kept instalment amounts and counts as event inputs rather than algorithm
+  constants. The specified replay values remain unchanged.
+- No implementation, commit, or push performed during this documentation update.
+
+## 2026-09-06 22:26:53 UTC — README cleanup
+
+- Reduced the README to project scope, current availability, prerequisites,
+  build/test commands, source layout, and engineering-document links.
+- Removed roadmap-style prose and descriptions of replay output that is not yet
+  implemented. Kept the absence of domain code and tests explicit.
+- No build configuration or implementation changed; no commit or push performed.
+
+## 2026-09-06 22:28:16 UTC — Build setup milestone prepared for commit
+
+- Prepared the verified Java 21, Maven Wrapper, and JUnit setup with source/test
+  directories, README, ignore rules, and the refined numerical inventory.
+- Confirmed that temporary smoke tests, build output, and local planning/reference
+  files are excluded from the commit. Domain implementation remains the next stage.
