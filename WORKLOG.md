@@ -506,3 +506,33 @@ below come from the Maven output and are converted to UTC.
   JAR build succeeded. `git diff --check` passed. All modeled input event types
   now have processing paths; fee assessment, interest, and daily reporting remain
   pending. README unchanged. No commit or push performed.
+
+## 2026-09-07 01:41:22 UTC — Overdraft fee assessment verified
+
+- Added `OverdraftAssessment` to close days as processing advances and reassess
+  affected closed days immediately after monetary postings. Processing dates never
+  move the closed-day boundary backward; the replay closes remaining days through
+  the configured window after all submissions, including late E10.
+- Assess accounts in chronological day order using ledger balances only. Append
+  one negative fee entry per account/day, with that day's value date and typed
+  overdraft source. Earlier fees affect later balances; reversals retain fees.
+- Added immutable `FeeAssessment` results containing account, accounting day,
+  pre-assessment balance, and optional fee amount. An absent amount reports
+  unsupported currency policy, not a waived fee or rejected debit. Unsupported BHD
+  assessments remain visible even after a later correction; no guessed fee is booked.
+- Honor the configured AED fee, including zero: record a supported zero assessment
+  without appending a zero-valued financial entry. Fee state is fresh for each replay.
+- Initial test run found seven old assertions expecting pre-fee balances or entry
+  counts. Kept those posting-focused cases explicit about using a zero fee; new
+  integration tests exercise the specified AED 25 policy and fee interactions.
+- Added 11 tests covering the full E1–E10 stream, immediate reassessment before
+  authorization, cascading fees, same-day recovery, holds, empty/negative opening
+  balances, account isolation, late inputs, retained fees, duplicate prevention,
+  unsupported BHD assessment, configured fees, and immutable results.
+- Full scenario verification: fees on Days 2, 4, and 5 total AED 75; E9 retains
+  them, leaving AED 390 before interest. ACC-002 receives BHD 10.000 after late
+  E10. Replay is repeatable and input history remains unchanged.
+- Ran `./mvnw clean verify`: all 83 tests passed with no failures, errors, or skips;
+  JAR build succeeded. `git diff --check` passed. Existing ambiguity policies were
+  sufficient; README unchanged. Interest and daily reporting remain pending.
+  No commit or push performed.

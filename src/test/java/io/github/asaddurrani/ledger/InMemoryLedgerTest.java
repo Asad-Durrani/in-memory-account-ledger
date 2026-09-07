@@ -90,7 +90,7 @@ class InMemoryLedgerTest {
         var first = ledger.replay();
         var second = ledger.replay();
 
-        assertEquals(new ReplayResult(List.of(aed), List.of(), List.of(), List.of()), first);
+        assertEquals(new ReplayResult(List.of(aed), List.of(), List.of(), List.of(), List.of()), first);
         assertEquals(first, second);
         assertThrows(UnsupportedOperationException.class, () -> first.ledgerEntries().clear());
         assertEquals(List.of(), ledger.eventRecords());

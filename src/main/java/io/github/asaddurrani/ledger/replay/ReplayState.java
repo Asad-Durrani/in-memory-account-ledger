@@ -4,6 +4,7 @@ import io.github.asaddurrani.ledger.model.Account;
 import io.github.asaddurrani.ledger.model.Authorization;
 import io.github.asaddurrani.ledger.model.AppendOnlyJournal;
 import io.github.asaddurrani.ledger.model.EventRecord;
+import io.github.asaddurrani.ledger.model.FeeAssessment;
 import io.github.asaddurrani.ledger.model.InMemoryJournal;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
 import io.github.asaddurrani.ledger.money.Money;
@@ -22,12 +23,32 @@ import java.util.Set;
 final class ReplayState {
     private final AppendOnlyJournal<LedgerEntry> ledgerEntries = new InMemoryJournal<>();
 
+    private int closedThrough;
+    private record FeeKey(String accountId, int day) {}
+    private final Map<FeeKey, FeeAssessment> feeAssessments = new LinkedHashMap<>();
+
     private record AuthorizationKey(String accountId, String authorizationId) {}
 
     private final Map<AuthorizationKey, Authorization> authorizations = new LinkedHashMap<>();
     private final Map<String, EventRecord> acceptedDebits = new HashMap<>();
     private final Set<String> reversedDebits = new HashSet<>();
     private final List<ReplayError> errors = new ArrayList<>();
+
+    int closedThrough() {
+        return closedThrough;
+    }
+
+    void closedThrough(int day) {
+        closedThrough = day;
+    }
+
+    FeeAssessment feeAssessment(String accountId, int day) {
+        return feeAssessments.get(new FeeKey(accountId, day));
+    }
+
+    void recordFeeAssessment(FeeAssessment assessment) {
+        feeAssessments.put(new FeeKey(assessment.accountId(), assessment.accountingDay()), assessment);
+    }
 
     void reject(ReplayError error) {
         errors.add(error);
@@ -72,6 +93,7 @@ final class ReplayState {
     }
 
     ReplayResult toResult(List<Account> accounts) {
-        return new ReplayResult(accounts, ledgerEntries(), errors, List.copyOf(authorizations.values()));
+        return new ReplayResult(accounts, ledgerEntries(), errors, List.copyOf(authorizations.values()),
+                List.copyOf(feeAssessments.values()));
     }
 }

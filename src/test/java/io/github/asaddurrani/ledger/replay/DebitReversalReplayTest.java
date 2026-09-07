@@ -13,13 +13,19 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class DebitReversalReplayTest {
+    // These posting-focused cases exclude fees; OverdraftAssessmentTest covers fee interactions.
+    private static LedgerSettings withoutFees() {
+        return new LedgerSettings(6, Money.of(Currency.AED, "0"),
+                java.math.BigDecimal.ZERO, java.math.RoundingMode.HALF_EVEN);
+    }
+
     private static Money aed(String amount) {
         return Money.of(Currency.AED, amount);
     }
 
     private static InMemoryLedger ledger() {
         return new InMemoryLedger(List.of(new Account("A", aed("0")),
-                new Account("B", Money.of(Currency.BHD, "0"))), LedgerSettings.forWindow(6));
+                new Account("B", Money.of(Currency.BHD, "0"))), withoutFees());
     }
 
     private static EventRecord debit(String id, String amount) {

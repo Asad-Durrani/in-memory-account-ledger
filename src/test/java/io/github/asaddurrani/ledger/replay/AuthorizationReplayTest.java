@@ -18,6 +18,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class AuthorizationReplayTest {
+    // These posting-focused cases exclude fees; OverdraftAssessmentTest covers fee interactions.
+    private static LedgerSettings withoutFees() {
+        return new LedgerSettings(6, Money.of(Currency.AED, "0"),
+                java.math.BigDecimal.ZERO, java.math.RoundingMode.HALF_EVEN);
+    }
+
     private static final String ACCOUNT = "ACC-001";
 
     private static Money aed(String amount) {
@@ -122,7 +128,7 @@ class AuthorizationReplayTest {
 
     @Test
     void backdatedDebitDoesNotRevokeApprovalOrBlockPreviouslyAuthorizedSettlement() {
-        var ledger = ledger("100");
+        var ledger = new InMemoryLedger(List.of(new Account(ACCOUNT, aed("100"))), withoutFees());
         ledger.appendEvent(auth("a", "A", "100"));
         ledger.appendEvent(new EventRecord("debit", ACCOUNT, 5, 1, new EventRecord.Details.Debit(aed("200"))));
         ledger.appendEvent(settle("s", "A", "90"));
@@ -209,7 +215,7 @@ class AuthorizationReplayTest {
     void authorizationResultsAreDefensivelyCopiedAndImmutable() {
         var supplied = new ArrayList<>(List.of(new Authorization(ACCOUNT, "A", "a", aed("1"),
                 Authorization.Status.APPROVED)));
-        var result = new ReplayResult(List.of(new Account(ACCOUNT, aed("10"))), List.of(), List.of(), supplied);
+        var result = new ReplayResult(List.of(new Account(ACCOUNT, aed("10"))), List.of(), List.of(), supplied, List.of());
         supplied.clear();
         assertEquals(1, result.authorizations().size());
         assertEquals(aed("9"), result.availableOn(ACCOUNT, 1));

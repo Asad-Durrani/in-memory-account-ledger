@@ -28,6 +28,10 @@ public final class LedgerReplay {
         var seenEventIds = new HashSet<String>();
 
         for (EventRecord event : eventRecords) {
+            // A valid processing day advances closing even if the input is later rejected.
+            if (event.processingDay() >= 1 && event.processingDay() <= settings.closingDay()) {
+                OverdraftAssessment.closeThrough(state, accounts, settings, event.processingDay() - 1);
+            }
             ReplayError.Reason rejection = validate(event, accountsById, settings, seenEventIds);
             if (rejection != null) {
                 retainRejectedAuthorization(event, accountsById, state, rejection);
@@ -35,6 +39,7 @@ public final class LedgerReplay {
                 continue;
             }
 
+            int entriesBefore = state.ledgerEntries().size();
             switch (event.details()) {
                 case EventRecord.Details.Credit credit -> appendPosting(state, event, credit.amount(), "credit", false);
                 case EventRecord.Details.Debit debit -> {
@@ -47,7 +52,11 @@ public final class LedgerReplay {
                 case EventRecord.Details.DebitReversal reversal -> reverseDebit(state, event, reversal);
                 case EventRecord.Details.InstalmentCredit instalments -> postInstalments(state, event, instalments);
             }
+            if (state.ledgerEntries().size() > entriesBefore) {
+                OverdraftAssessment.reassess(state, accountsById.get(event.accountId()), settings, event.valueDate());
+            }
         }
+        OverdraftAssessment.closeThrough(state, accounts, settings, settings.closingDay());
         return state.toResult(accounts);
     }
 

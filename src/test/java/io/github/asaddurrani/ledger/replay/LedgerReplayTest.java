@@ -15,6 +15,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class LedgerReplayTest {
+    // These posting-focused cases exclude fees; OverdraftAssessmentTest covers fee interactions.
+    private static LedgerSettings withoutFees() {
+        return new LedgerSettings(6, Money.of(Currency.AED, "0"),
+                java.math.BigDecimal.ZERO, java.math.RoundingMode.HALF_EVEN);
+    }
+
     private final Account aed = new Account("ACC-001", Money.of(Currency.AED, "0"));
     private final Account bhd = new Account("ACC-002", Money.of(Currency.BHD, "0.001"));
 
@@ -30,7 +36,7 @@ class LedgerReplayTest {
 
     @Test
     void backdatedDebitPreservesEarlierResultsAndEntryPrefixWithDeterministicReplay() {
-        var ledger = ledger();
+        var ledger = new InMemoryLedger(List.of(aed, bhd), withoutFees());
         ledger.appendEvent(credit("E1", aed.accountId(), 1, 1, Currency.AED, "1200"));
         ledger.appendEvent(new EventRecord("E2", aed.accountId(), 1, 1,
                 new EventRecord.Details.Debit(Money.of(Currency.AED, "950"))));
@@ -139,7 +145,7 @@ class LedgerReplayTest {
         var errors = new ArrayList<ReplayError>();
         var event = credit("bad", "missing", 1, 1, Currency.AED, "1");
         errors.add(new ReplayError(event, ReplayError.Reason.UNKNOWN_ACCOUNT));
-        var result = new ReplayResult(accounts, entries, errors, List.of());
+        var result = new ReplayResult(accounts, entries, errors, List.of(), List.of());
         accounts.clear();
         entries.add(new LedgerEntry("later", aed.accountId(), Money.of(Currency.AED, "1"),
                 1, new LedgerEntry.Source.InputEvent("later")));
