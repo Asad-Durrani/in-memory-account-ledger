@@ -122,7 +122,7 @@ public final class LedgerReplay {
         // and all currently active holds. Later backdating does not rewrite them.
         boolean approved = state.availableOn(account, event.processingDay())
                 .compareTo(details.holdAmount()) >= 0;
-        state.putAuthorization(new Authorization(event.accountId(), details.authorizationId(),
+        state.putAuthorization(event, new Authorization(event.accountId(), details.authorizationId(),
                 event.eventId(), details.holdAmount(),
                 approved ? Authorization.Status.APPROVED : Authorization.Status.REJECTED));
         if (!approved) {
@@ -144,7 +144,7 @@ public final class LedgerReplay {
             state.reject(new ReplayError(event, ReplayError.Reason.SETTLEMENT_EXCEEDS_HOLD));
         } else {
             appendPosting(state, event, details.amount(), "settlement", true);
-            state.putAuthorization(new Authorization(authorization.accountId(), authorization.authorizationId(),
+            state.putAuthorization(event, new Authorization(authorization.accountId(), authorization.authorizationId(),
                     authorization.eventId(), authorization.holdAmount(), Authorization.Status.SETTLED));
         }
     }
@@ -158,7 +158,7 @@ public final class LedgerReplay {
                 && accounts.containsKey(event.accountId())
                 && !details.authorizationId().isBlank()
                 && state.authorization(event.accountId(), details.authorizationId()) == null) {
-            state.putAuthorization(new Authorization(event.accountId(), details.authorizationId(),
+            state.putAuthorization(event, new Authorization(event.accountId(), details.authorizationId(),
                     event.eventId(), details.holdAmount(), Authorization.Status.REJECTED));
         }
     }

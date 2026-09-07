@@ -204,7 +204,7 @@ class OverdraftAssessmentTest {
     @Test
     void resultDefensivelyCopiesFeeAssessments() {
         var assessments = new ArrayList<>(List.of(new FeeAssessment("A", 1, aed("-1"), Optional.of(aed("25")))));
-        var result = new ReplayResult(List.of(), List.of(), List.of(), List.of(), assessments, List.of());
+        var result = new ReplayResult(List.of(), List.of(), List.of(), List.of(), assessments, List.of(), List.of());
         assessments.clear();
         assertEquals(1, result.feeAssessments().size());
         assertThrows(UnsupportedOperationException.class, () -> result.feeAssessments().clear());

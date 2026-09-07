@@ -2,6 +2,7 @@ package io.github.asaddurrani.ledger.replay;
 
 import io.github.asaddurrani.ledger.model.Account;
 import io.github.asaddurrani.ledger.model.Authorization;
+import io.github.asaddurrani.ledger.model.AuthorizationChange;
 import io.github.asaddurrani.ledger.model.InterestAccrual;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
 import io.github.asaddurrani.ledger.model.FeeAssessment;
@@ -12,7 +13,7 @@ import java.util.List;
 public record ReplayResult(
         List<Account> accounts, List<LedgerEntry> ledgerEntries, List<ReplayError> errors,
         List<Authorization> authorizations, List<FeeAssessment> feeAssessments,
-        List<InterestAccrual> interestAccruals) {
+        List<InterestAccrual> interestAccruals, List<AuthorizationChange> authorizationChanges) {
     public ReplayResult {
         accounts = List.copyOf(accounts);
         ledgerEntries = List.copyOf(ledgerEntries);
@@ -20,6 +21,7 @@ public record ReplayResult(
         authorizations = List.copyOf(authorizations);
         feeAssessments = List.copyOf(feeAssessments);
         interestAccruals = List.copyOf(interestAccruals);
+        authorizationChanges = List.copyOf(authorizationChanges);
     }
 
     /**

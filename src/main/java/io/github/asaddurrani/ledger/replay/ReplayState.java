@@ -2,6 +2,7 @@ package io.github.asaddurrani.ledger.replay;
 
 import io.github.asaddurrani.ledger.model.Account;
 import io.github.asaddurrani.ledger.model.Authorization;
+import io.github.asaddurrani.ledger.model.AuthorizationChange;
 import io.github.asaddurrani.ledger.model.AppendOnlyJournal;
 import io.github.asaddurrani.ledger.model.EventRecord;
 import io.github.asaddurrani.ledger.model.FeeAssessment;
@@ -34,6 +35,7 @@ final class ReplayState {
     private final Map<String, EventRecord> acceptedDebits = new HashMap<>();
     private final Set<String> reversedDebits = new HashSet<>();
     private final List<InterestAccrual> interestAccruals = new ArrayList<>();
+    private final List<AuthorizationChange> authorizationChanges = new ArrayList<>();
     private final List<ReplayError> errors = new ArrayList<>();
 
     int closedThrough() {
@@ -93,7 +95,8 @@ final class ReplayState {
         return authorizations.get(new AuthorizationKey(accountId, authorizationId));
     }
 
-    void putAuthorization(Authorization authorization) {
+    void putAuthorization(EventRecord event, Authorization authorization) {
+        authorizationChanges.add(new AuthorizationChange(event.processingDay(), event.eventId(), authorization));
         authorizations.put(new AuthorizationKey(authorization.accountId(), authorization.authorizationId()),
                 authorization);
     }
@@ -105,6 +108,6 @@ final class ReplayState {
 
     ReplayResult toResult(List<Account> accounts) {
         return new ReplayResult(accounts, ledgerEntries(), errors, List.copyOf(authorizations.values()),
-                List.copyOf(feeAssessments.values()), interestAccruals);
+                List.copyOf(feeAssessments.values()), interestAccruals, authorizationChanges);
     }
 }

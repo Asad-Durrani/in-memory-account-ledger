@@ -115,3 +115,14 @@ If a BHD closing balance is negative, report unsupported fee assessment without
 inventing a fee or silently waiving it. This does not invalidate the debit.
 Interest for that account also remains unfinalized because the fee-adjusted
 balances are unknown. The supplied scenario never requires a BHD fee.
+
+### Daily report perspective
+
+The prompt asks for daily closing balances and authorization states without
+specifying whether balances reflect the original close or the completed replay.
+Report revised value-dated balances after all inputs, retained fees, and final
+capitalization. Report authorization decisions through each processing day,
+retaining transition order from the submitted stream; later backdating does not
+recompute approvals. Attribute errors to their input processing day and fees to
+the accounting day assessed. Label these perspectives explicitly so revised
+balances are not mistaken for the funds available at authorization time.

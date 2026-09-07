@@ -172,7 +172,7 @@ class InterestCapitalizationTest {
     void resultDefensivelyCopiesAccrualsAndExposesImmutableHistory() {
         var accrual = new InterestAccrual("A", 1, aed("100"), Optional.of(aed("0.04")));
         var supplied = new ArrayList<>(List.of(accrual));
-        var result = new ReplayResult(List.of(), List.of(), List.of(), List.of(), List.of(), supplied);
+        var result = new ReplayResult(List.of(), List.of(), List.of(), List.of(), List.of(), supplied, List.of());
         supplied.clear();
         assertEquals(List.of(accrual), result.interestAccruals());
         assertThrows(UnsupportedOperationException.class, () -> result.interestAccruals().clear());

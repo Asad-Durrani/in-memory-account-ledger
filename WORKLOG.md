@@ -564,3 +564,26 @@ below come from the Maven output and are converted to UTC.
 - Ran `./mvnw clean verify`: all 95 tests passed with no failures, errors, or skips;
   JAR build succeeded. `git diff --check` passed. Runnable daily reporting and
   remaining deliverable checks are still pending. README unchanged. No commit or push.
+
+## 2026-09-07 01:55:40 UTC — Runnable daily scenario report verified
+
+- Added a Java entry point that submits the exact E1–E10 stream using ACC-001
+  and ACC-002, retaining E10 after E9 despite its earlier processing day.
+- Report both accounts for Days 1–6 with revised closing balances, retained fee
+  assessments and their original negative bases, rounded interest, authorization
+  states through each processing day, and that day's rejected events.
+- Retained immutable authorization transitions during replay, including the
+  originating decision event and processing day. Final authorization projections
+  remain available; reporting does not finalize shortened replays or recompute
+  historical approval decisions from revised balances.
+- Documented the report's accounting/operational time perspectives in AMBIGUITIES
+  and refreshed README with current capabilities, the run command, field meanings,
+  and all expected daily closing balances.
+- Added scenario reporting tests for daily balances in both currencies, approval
+  and settlement timing, rejected events, fees, accruals, immutable transitions,
+  original input order, and repeatable results.
+- Ran `./mvnw -B -ntp clean verify`: 97 tests passed with no failures, errors, or
+  skips, and the JAR built successfully. Ran the documented Java command and
+  inspected its complete output; final balances are AED 390.93 and BHD 10.008.
+  `git diff --check` passed. The required intentionally failing design test remains
+  pending. No commit or push performed.

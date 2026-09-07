@@ -151,7 +151,7 @@ class LedgerReplayTest {
         var errors = new ArrayList<ReplayError>();
         var event = credit("bad", "missing", 1, 1, Currency.AED, "1");
         errors.add(new ReplayError(event, ReplayError.Reason.UNKNOWN_ACCOUNT));
-        var result = new ReplayResult(accounts, entries, errors, List.of(), List.of(), List.of());
+        var result = new ReplayResult(accounts, entries, errors, List.of(), List.of(), List.of(), List.of());
         accounts.clear();
         entries.add(new LedgerEntry("later", aed.accountId(), Money.of(Currency.AED, "1"),
                 1, new LedgerEntry.Source.InputEvent("later")));

@@ -221,7 +221,7 @@ class AuthorizationReplayTest {
     void authorizationResultsAreDefensivelyCopiedAndImmutable() {
         var supplied = new ArrayList<>(List.of(new Authorization(ACCOUNT, "A", "a", aed("1"),
                 Authorization.Status.APPROVED)));
-        var result = new ReplayResult(List.of(new Account(ACCOUNT, aed("10"))), List.of(), List.of(), supplied, List.of(), List.of());
+        var result = new ReplayResult(List.of(new Account(ACCOUNT, aed("10"))), List.of(), List.of(), supplied, List.of(), List.of(), List.of());
         supplied.clear();
         assertEquals(1, result.authorizations().size());
         assertEquals(aed("9"), result.availableOn(ACCOUNT, 1));
