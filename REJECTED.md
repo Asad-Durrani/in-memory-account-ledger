@@ -3,6 +3,9 @@
 Letters A–H identify the acceptance criteria in their listed order. B, F, G, and H
 are rejected for the reasons below. F depends on the selected fee-retention policy.
 
+Scenario calculations below are expected outcomes under the documented policies,
+not results from implemented financial replay. Event processing remains unimplemented.
+
 ## Accepted criteria
 
 | Criterion | Reason |
@@ -72,3 +75,12 @@ interest whenever digits were discarded, even when the next higher amount was
 closer. Half-even was selected for nearest rounding without a fixed direction on
 ties. Truncation was rejected on policy grounds rather than for violating an
 explicit requirement. It was not implemented.
+
+## Approach implemented and replaced — account-local journals
+
+The initial input model used one journal per account and a shared submission
+sequence to recover global event order. A single journal owned by the ledger
+preserves that order directly, including events whose processing dates move
+backward. Account-local journals and their sequence allocator were removed;
+accounts contain only their identity, opening balance, and currency. Event records
+remain separate from monetary ledger entries.

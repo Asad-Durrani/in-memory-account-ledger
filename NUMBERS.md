@@ -22,7 +22,12 @@ assessment remains unsupported as documented in `AMBIGUITIES.md`.
 
 ## Chosen values
 
-No additional numerical limits or tuning constants have been chosen. Any introduced
-during implementation must include a rationale and explain why a materially
-smaller value was not selected. Rounding and allocation policies are documented in
-`AMBIGUITIES.md`.
+No additional numerical limits or tuning constants have been chosen. Journal
+insertion order preserves the event stream without a separate sequence counter.
+The accounting window starts at Day 1, following the numbered-day convention;
+its closing day is supplied in immutable `LedgerSettings` at construction and
+must be at least Day 1. `LedgerSettings.forWindow` supplies the specified AED fee
+and daily interest rate above. Fee amounts and rates must be nonnegative; zero
+represents no charge or accrual, so no arbitrary positive minimum is imposed.
+
+Rounding and allocation policies are documented in `AMBIGUITIES.md`.

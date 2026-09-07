@@ -4,6 +4,10 @@ This document records unspecified domain policies, the selected interpretations,
 their alternatives, and observable consequences. Cases outside the six-day
 scenario are identified separately.
 
+Resolved status refers to policy decisions, not completed implementation. Financial
+event processing remains unimplemented; scenario consequences below are expected
+results derived from the selected policies.
+
 ## Overdraft reassessment timing after a backdated posting
 
 Status: resolved.
@@ -167,6 +171,24 @@ failing test, demonstrating unsupported assessment without inventing an expected
 fee amount. A test expecting the exception would instead verify the chosen error
 behavior and pass.
 
+## Input amounts exceeding currency precision
+
+Status: resolved.
+
+Currency precision is specified, but handling of excess input digits is not.
+Rounding them would silently change the supplied amount; rejecting every extra
+digit would also reject harmless trailing zeros.
+
+Decision: normalize amounts to currency precision without rounding. Accept values
+that are exactly representable, including extra trailing zeros, and reject values
+that would lose a nonzero fractional amount. The money value type supports zero
+and negative amounts so it can represent ledger balances and arithmetic results.
+Event-specific amount constraints belong to event processing.
+
+Consequence: AED 10.000 becomes AED 10.00; AED 10.001 is rejected. BHD 10.001 is
+valid. The supplied scenario is unaffected. Interest rounding remains a separate,
+explicit calculation performed before constructing a posted monetary amount.
+
 ## Corrections received after capitalization
 
 Status: outside scope.
@@ -175,3 +197,24 @@ Corrections arriving after interest capitalization are outside the six-day repla
 A future extension would need to choose between appending interest adjustments
 and leaving finalized accruals unchanged. Neither behavior is defined here.
 Pre-capitalization recalculation does not authorize changing an existing posting.
+
+## Settings changes during a ledger's lifetime
+
+Status: fixed settings; policy versioning is outside scope.
+
+The scenario supplies a single fee and daily interest rate but does not define
+changes to those parameters over time. Applying a new rate or fee to existing
+history could change replay results and conflict with already recognized entries.
+Alternatives are a fixed policy for the entire ledger or versioned policies with
+explicit effective dates and rules for backdated activity.
+
+Decision: supply immutable `LedgerSettings` at ledger construction and retain them
+for its lifetime. The accounting window, overdraft fee, daily interest rate, and
+interest rounding mode cannot be replaced during recording or replay. The scenario
+uses AED 25.00, a daily rate of 0.0004, and `HALF_EVEN` rounding. No BHD fee is added.
+
+Supporting changes within the same ledger would require policy versioning and a
+decision about which version applies to backdated entries, fee reassessments, and
+interest recalculations. Those capabilities are outside this exercise. Separate
+ledger instances may be constructed with different settings; doing so does not
+change the policy or history of an existing instance.

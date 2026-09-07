@@ -3,8 +3,9 @@
 A Java project for an in-memory AED/BHD account ledger with value-dated postings,
 authorization holds, overdraft fees, and daily interest.
 
-The repository currently contains the build setup and domain documentation.
-Ledger implementation, domain tests, and scenario replay are not yet available.
+The currency and immutable money types are implemented with exact `BigDecimal`
+arithmetic and behavioral tests. Event processing and scenario replay are not yet
+available.
 
 ## Requirements
 
@@ -31,8 +32,8 @@ On Windows, replace `./mvnw` with `.\mvnw.cmd`.
 project. Build output goes to `target/`; test reports go to
 `target/surefire-reports/` when tests are present.
 
-At this setup stage, Maven reports no tests and may emit missing-output-directory
-and empty-JAR warnings. A successful build validates the configuration only.
+The current tests cover currency precision, exact arithmetic, numerical equality,
+negative balances, and rejection of mixed-currency operations.
 
 ## Source layout
 

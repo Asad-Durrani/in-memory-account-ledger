@@ -165,3 +165,177 @@ as observed context rather than assigned a retrospective timestamp.
   directories, README, ignore rules, and the refined numerical inventory.
 - Confirmed that temporary smoke tests, build output, and local planning/reference
   files are excluded from the commit. Domain implementation remains the next stage.
+
+## 2026-09-06 22:30:35 UTC — Exact money and currency implementation
+
+- Added AED/BHD currency precision and an immutable money value backed by
+  `BigDecimal`, with exact arithmetic, canonical scale, and currency-safe comparison.
+- Defined excess-precision handling: accept exact normalization, reject amounts
+  requiring rounding, and keep interest rounding separate from money construction.
+- Added behavioral tests for precision, arithmetic, equality, negative balances,
+  required fields, and mixed-currency rejection. Replaced empty-directory markers
+  with source files and updated the README. Validation follows.
+
+## 2026-09-06 22:33:13 UTC — Money behavior verified
+
+- Ran `./mvnw -B -ntp -Dtest=MoneyTest test`: 20 cases passed with no failures,
+  errors, or skipped cases. Both production types and the test suite compiled
+  for Java 21.
+- Verified exact AED/BHD arithmetic, normalization without rounding, numerical
+  equality, negative results, and currency mismatch handling. Whitespace checks
+  passed. Event processing remains the next increment; no commit or push made.
+
+## 2026-09-06 23:29:19 UTC — Input and journal increment
+
+- Inspected the existing money implementation, repository changes, and recorded
+  financial decisions. Preserved all existing local changes; no applicable
+  `AGENTS.md` files were found.
+- Added immutable inputs with event/account IDs, processing day, value date, and
+  sealed details for credit, debit, authorization, settlement, referenced reversal,
+  and instalment credit. Reversals carry only their reference, not another amount.
+- Added append-only account journals and a shared submission sequence to recover
+  cross-account input order independently of either date. Returned histories are
+  immutable snapshots. Business validation remains a replay responsibility;
+  unknown references and duplicate submissions are retained for evaluation.
+- Added behavioral coverage for global ordering, account routing, retained inputs,
+  and history immutability. Replay, financial postings, and balance projections
+  remain for subsequent increments; validation follows.
+
+## 2026-09-06 23:29:59 UTC — Input and journal behavior verified
+
+- Ran `./mvnw -B -ntp test`: all 24 cases passed (20 money cases and 4 journal
+  cases), with no failures, errors, or skips.
+- Verified cross-account submission order despite nonmonotonic dates, retained
+  unknown references and repeated submissions, immutable history snapshots, and
+  rejection of incorrectly routed inputs without altering the journal.
+- Whitespace checks passed. Documented the submission sequence representation in
+  the numerical inventory. No commit or push performed.
+
+## 2026-09-06 23:47:51 UTC — Ledger-owned journal model
+
+- Confirmed that the earlier input/journal files had been removed and that the
+  existing money and currency implementation remained. Preserved local changes.
+- Added account definitions, typed `EventRecord` inputs, a single ledger-owned
+  `Journal`, and immutable `LedgerEntry` values with typed event, fee, or interest
+  sources. Accounts derive currency from their opening money amount rather than
+  storing a second potentially inconsistent currency field.
+- Added `InMemoryLedger.appendToLedger(EventRecord)` and private ledger-entry
+  append, with immutable history access. Appending records does not create
+  monetary entries. The accounting window is supplied at construction.
+- Reserved `replay()` with an explicit unsupported-operation exception pending the
+  financial-processing increment. No replay results, fees, holds, capitalization,
+  or financial idempotency are implemented or claimed in this model increment.
+- Replaced obsolete sequence-counter documentation and recorded the replaced
+  account-local journal approach. Added behavioral tests; validation follows.
+
+## 2026-09-06 23:50:29 UTC — Core model verified
+
+- Ran `./mvnw -B -ntp test`: 25 tests passed (20 money cases and 5 ledger model
+  cases), with no failures, errors, or skips.
+- Verified submission order across accounts and nonmonotonic dates, retention of
+  unknown references and repeated inputs, immutable snapshots, protected account
+  definitions, and absence of monetary entries when merely recording activity.
+- `git diff --check` passed. Financial replay remains unimplemented; the model
+  tests do not claim replay correctness. No commit or push performed.
+
+## 2026-09-06 23:51:27 UTC — Domain package organization
+
+- Moved `Account`, `Currency`, `Money`, `EventRecord`, `LedgerEntry`, and `Journal`
+  into `io.github.asaddurrani.ledger.model`. Kept `InMemoryLedger` in the main
+  ledger package as the coordinating API.
+- Moved `MoneyTest` into the matching model test package and updated ledger imports.
+  No domain behavior changed. Started a clean test build to verify the new package
+  layout without relying on previously compiled classes.
+
+## 2026-09-06 23:52:17 UTC — Package move verified
+
+- Ran `./mvnw -B -ntp clean test`: all 25 tests passed with no failures, errors,
+  or skips. Whitespace checks passed. No commit or push performed.
+
+## 2026-09-06 23:55:18 UTC — Shared append-only history abstraction
+
+- Replaced the event-specific `Journal` with `AppendOnlyJournal<T>` and a final
+  `InMemoryJournal<T>` implementation. The interface exposes only append and
+  immutable insertion-ordered snapshots; stored domain records are immutable.
+- Changed both event and monetary histories in `InMemoryLedger` to the interface,
+  removing its direct access to the mutable ledger-entry list. Public event append
+  and private monetary-entry append retain their existing visibility.
+- Added behavioral checks for repeated event records, rejection of snapshot update,
+  deletion, insertion, and iterator removal, stable snapshots after monetary append,
+  and null rejection without changing history. Validation follows.
+
+## 2026-09-06 23:56:39 UTC — Append-only histories verified
+
+- Ran `./mvnw -B -ntp clean test`: all 28 tests passed, with no failures, errors,
+  or skips. The new journal tests exercise both event and monetary record types.
+- Whitespace checks passed. Replay remains unimplemented. No commit or push made.
+
+## 2026-09-06 23:59:31 UTC — Immutable ledger settings
+
+- Moved the closing day into immutable `LedgerSettings`, alongside the AED
+  overdraft fee, daily interest rate, and interest rounding mode. Added a window
+  factory using the specified fee/rate and selected half-even rounding.
+- The ledger retains a final settings reference supplied at construction; no
+  settings replacement API exists. Account currency precision remains in `Currency`.
+- Documented fixed lifetime settings and the need for policy versioning and
+  effective-date rules before supporting changes within an existing ledger.
+  Negative-BHD fee assessment remains unsupported. Validation follows.
+
+## 2026-09-07 00:29:47 UTC — API and replay structure changes recorded
+
+This entry records the changes completed in this session. Build completion times
+below come from the Maven output and are converted to UTC.
+
+- Renamed `InMemoryLedger.appendToLedger(EventRecord)` to `appendEvent` to
+  distinguish submitted event history from generated monetary entries. Renamed
+  `LedgerEntry.Source.Event` to `Source.InputEvent` and updated test references.
+- Initially clarified the unimplemented replay contract to prohibit duplicate
+  financial entries. Documented `HALF_EVEN` in `LedgerSettings.forWindow` as a
+  selected interpretation because the specification does not define tie-breaking.
+  The rounding mode itself was unchanged.
+- Verified that patch with `./mvnw clean verify`, completed at
+  2026-09-07 00:14:50 UTC: 31 tests passed, with no failures, errors, or skips;
+  the JAR was built successfully.
+- Subsequently removed the long-lived ledger-entry journal and its accessor from
+  `InMemoryLedger`. The ledger now owns only account definitions, fixed settings,
+  and submitted append-only event history.
+- Changed `replay()` to return an immutable `ReplayResult` through package-private
+  `LedgerReplay`. Each invocation creates a fresh package-private `ReplayState`
+  with its own append-only ledger-entry journal. `ReplayResult` defensively copies
+  the resulting entries.
+- Documented insertion-order replay and reconstruction of the entries that would
+  have been booked, with later entries never mutating or removing earlier ones.
+  Empty history returns an empty result. Nonempty history explicitly throws
+  `UnsupportedOperationException` because financial event interpretation remains
+  unimplemented.
+- Updated existing tests for the removed accessor and added coverage for repeated
+  empty replay, rejection of nonempty replay without changing submitted history,
+  isolation between replay states, stable earlier results, and defensive copying.
+  These structural checks do not establish deterministic financial replay yet.
+- Verified the structural patch with `./mvnw clean verify`, completed at
+  2026-09-07 00:24:47 UTC: 35 tests passed, with no failures, errors, or skips;
+  the JAR was built successfully. `git diff --check` passed for both patches.
+- Preserved existing model semantics, including account currency derived from
+  opening balance, exact `BigDecimal` money, and construction using
+  `RoundingMode.UNNECESSARY`. Added no business rules, persistence, caching,
+  snapshots, or concurrency infrastructure.
+- Reviewed `ORIGINAL_PROMPT` and the documented policies. Recommended basic
+  credit/debit booking and value-dated balance calculation as the next increment;
+  that work has not started. No commit or push performed.
+
+## 2026-09-07 00:33:07 UTC — Pre-commit cleanup verified
+
+- Reviewed pending source and documentation changes, including untracked Java
+  files. Found no stale API references outside historical worklog entries and no
+  accidental files among pending additions. Removed `.gitkeep` placeholders are
+  superseded by the source and test packages.
+- Tidied import order and wrapped the duplicate-account assertion in
+  `InMemoryLedgerTest`. Retained the intentional replay parameters and
+  `ReplayState.appendLedgerEntry`; no business behavior changed.
+- Clarified in `AMBIGUITIES.md` and `REJECTED.md` that selected policies and
+  scenario calculations do not claim completed financial event processing.
+- Left README unchanged during this cleanup, as requested, and preserved prior
+  worklog entries.
+- Ran `./mvnw clean verify`: 35 tests passed with no failures, errors, or skips,
+  and the JAR built successfully. Checked all 17 Java files for whitespace and
+  conflict markers; `git diff --check` passed. No staging, commit, or push performed.
