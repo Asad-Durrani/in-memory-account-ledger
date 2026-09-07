@@ -34,10 +34,10 @@ public final class InMemoryLedger {
     }
 
     /**
-     * Reconstructs the ledger history that would have been booked by processing
-     * submitted immutable event history in insertion order. Each invocation uses
-     * fresh state, so the same history must produce the same result without duplicates.
-     * All modeled input event types are supported.
+     * Builds an independent projection in submission order without committing or
+     * freezing the window. Identical input produces identical results; additional
+     * events may change derived fee and interest postings in the new projection.
+     * Submitted events and previously returned results remain unchanged.
      * Overdraft fees are assessed through the closing day, then revised daily
      * interest is summed and capitalized for accounts with a defined fee policy.
      */

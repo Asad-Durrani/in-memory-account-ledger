@@ -89,6 +89,17 @@ public final class ScenarioReport {
                         .append("\n    errors: ").append(orNone(errors)).append('\n');
             }
         }
+        var accountIds = result.accounts().stream().map(Account::accountId).collect(Collectors.toSet());
+        String unassignedErrors = result.errors().stream()
+                .filter(e -> !accountIds.contains(e.event().accountId())
+                        || e.event().processingDay() < 1 || e.event().processingDay() > closingDay)
+                .map(e -> "  " + e.event().eventId() + "=" + e.reason()
+                        + " | account " + e.event().accountId()
+                        + " | processing day " + e.event().processingDay())
+                .collect(Collectors.joining("\n"));
+        if (!unassignedErrors.isEmpty()) {
+            output.append("\nUnassigned errors:\n").append(unassignedErrors).append('\n');
+        }
         return output.toString();
     }
 

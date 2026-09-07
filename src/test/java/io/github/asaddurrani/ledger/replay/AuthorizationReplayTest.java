@@ -52,6 +52,12 @@ class AuthorizationReplayTest {
         return result.errors().stream().map(ReplayError::reason).toList();
     }
 
+    private static List<Money> approvedHolds(ReplayResult result, String accountId) {
+        return result.authorizations().stream()
+                .filter(a -> a.accountId().equals(accountId) && a.status() == Authorization.Status.APPROVED)
+                .map(Authorization::holdAmount).toList();
+    }
+
     @Test
     void suppliedAuthorizationAndSettlementReleaseWholeHoldAndRejectUnknownReference() {
         var ledger = ledger("0");
@@ -60,7 +66,7 @@ class AuthorizationReplayTest {
         ledger.appendEvent(auth("E3", "Auth-A", "200"));
         var held = ledger.replay();
         assertEquals(aed("250"), held.balanceOn(ACCOUNT, 2));
-        assertEquals(aed("50"), held.availableOn(ACCOUNT, 2));
+        assertEquals(List.of(aed("200")), approvedHolds(held, ACCOUNT));
         assertEquals(2, held.ledgerEntries().size());
 
         ledger.appendEvent(new EventRecord("E4", ACCOUNT, 3, 3, new EventRecord.Details.Credit(aed("400"))));
@@ -68,7 +74,7 @@ class AuthorizationReplayTest {
         ledger.appendEvent(settle("E6", "Auth-Z", "180"));
         var result = ledger.replay();
         assertEquals(aed("465"), result.balanceOn(ACCOUNT, 4));
-        assertEquals(aed("465"), result.availableOn(ACCOUNT, 4));
+        assertEquals(List.of(), approvedHolds(result, ACCOUNT));
         assertEquals(Authorization.Status.SETTLED, result.authorizations().getFirst().status());
         assertEquals(new LedgerEntry("E5:settlement", ACCOUNT, aed("-185"), 4,
                 new LedgerEntry.Source.InputEvent("E5")), result.ledgerEntries().getLast());
@@ -76,7 +82,7 @@ class AuthorizationReplayTest {
         assertEquals("E6", result.errors().getFirst().event().eventId());
         assertEquals(held.ledgerEntries(), result.ledgerEntries().subList(0, 2));
         assertEquals(Authorization.Status.APPROVED, held.authorizations().getFirst().status());
-        assertEquals(aed("50"), held.availableOn(ACCOUNT, 2));
+        assertEquals(List.of(aed("200")), approvedHolds(held, ACCOUNT));
         assertEquals(result, ledger.replay());
         assertEquals(6, ledger.eventRecords().size());
     }
@@ -91,7 +97,7 @@ class AuthorizationReplayTest {
         assertEquals(List.of(Authorization.Status.APPROVED, Authorization.Status.APPROVED,
                 Authorization.Status.REJECTED), result.authorizations().stream().map(Authorization::status).toList());
         assertEquals(aed("100"), result.balanceOn(ACCOUNT, 6));
-        assertEquals(aed("0"), result.availableOn(ACCOUNT, 6));
+        assertEquals(List.of(aed("60"), aed("40")), approvedHolds(result, ACCOUNT));
         assertEquals(List.of(), result.ledgerEntries());
         assertEquals(List.of(ReplayError.Reason.INSUFFICIENT_AVAILABLE_BALANCE), reasons(result));
     }
@@ -114,7 +120,8 @@ class AuthorizationReplayTest {
                 ReplayError.Reason.DUPLICATE_AUTHORIZATION_ID), reasons(result));
         assertEquals(2, result.authorizations().size());
         assertEquals(1, result.ledgerEntries().size());
-        assertEquals(aed("50"), result.availableOn(ACCOUNT, 6));
+        assertEquals(aed("50"), result.balanceOn(ACCOUNT, 6));
+        assertEquals(List.of(), approvedHolds(result, ACCOUNT));
     }
 
     @ParameterizedTest
@@ -125,10 +132,13 @@ class AuthorizationReplayTest {
         ledger.appendEvent(settle("bad", "A", amount));
         var rejected = ledger.replay();
         assertEquals(List.of(reason), reasons(rejected));
-        assertEquals(aed("50"), rejected.availableOn(ACCOUNT, 4));
+        assertEquals(List.of(aed("50")), approvedHolds(rejected, ACCOUNT));
         assertEquals(List.of(), rejected.ledgerEntries());
         ledger.appendEvent(settle("good", "A", "40"));
-        assertEquals(aed("60"), ledger.replay().availableOn(ACCOUNT, 4));
+        var settled = ledger.replay();
+        assertEquals(aed("60"), settled.balanceOn(ACCOUNT, 4));
+        assertEquals(Authorization.Status.SETTLED, settled.authorizations().getFirst().status());
+        assertEquals(List.of(), approvedHolds(settled, ACCOUNT));
         assertEquals(Authorization.Status.APPROVED, rejected.authorizations().getFirst().status());
     }
 
@@ -156,7 +166,7 @@ class AuthorizationReplayTest {
         assertEquals(List.of(ReplayError.Reason.INSUFFICIENT_AVAILABLE_BALANCE,
                 ReplayError.Reason.AUTHORIZATION_NOT_ACTIVE), reasons(result));
         assertEquals(Authorization.Status.REJECTED, result.authorizations().getFirst().status());
-        assertEquals(aed("200"), result.availableOn(ACCOUNT, 6));
+        assertEquals(aed("200"), result.balanceOn(ACCOUNT, 6));
     }
 
     @Test
@@ -176,8 +186,10 @@ class AuthorizationReplayTest {
         var result = ledger.replay();
         assertEquals(List.of(ReplayError.Reason.CURRENCY_MISMATCH, ReplayError.Reason.UNKNOWN_AUTHORIZATION),
                 reasons(result));
-        assertEquals(aed("49"), result.availableOn(ACCOUNT, 4));
-        assertEquals(Money.of(Currency.BHD, "5.001"), result.availableOn("BHD", 4));
+        assertEquals(aed("100"), result.balanceOn(ACCOUNT, 4));
+        assertEquals(List.of(aed("50"), aed("1")), approvedHolds(result, ACCOUNT));
+        assertEquals(Money.of(Currency.BHD, "5.001"), result.balanceOn("BHD", 4));
+        assertEquals(List.of(), approvedHolds(result, "BHD"));
         assertEquals(result, ledger.replay());
     }
 
@@ -197,7 +209,7 @@ class AuthorizationReplayTest {
                 ReplayError.Reason.INVALID_AUTHORIZATION_ID, ReplayError.Reason.INVALID_AUTHORIZATION_ID,
                 ReplayError.Reason.DUPLICATE_EVENT_ID, ReplayError.Reason.DUPLICATE_EVENT_ID), reasons(result));
         assertEquals(2, result.authorizations().size());
-        assertEquals(aed("90"), result.availableOn(ACCOUNT, 4));
+        assertEquals(List.of(aed("10")), approvedHolds(result, ACCOUNT));
     }
 
     @Test
@@ -213,7 +225,7 @@ class AuthorizationReplayTest {
         var result = ledger.replay();
         assertEquals(List.of(ReplayError.Reason.INVALID_PROCESSING_DAY, ReplayError.Reason.INVALID_VALUE_DATE,
                 ReplayError.Reason.CURRENCY_MISMATCH), reasons(result));
-        assertEquals(aed("50"), result.availableOn(ACCOUNT, 4));
+        assertEquals(List.of(aed("50")), approvedHolds(result, ACCOUNT));
         assertEquals(List.of(), result.ledgerEntries());
     }
 
@@ -224,7 +236,7 @@ class AuthorizationReplayTest {
         var result = new ReplayResult(List.of(new Account(ACCOUNT, aed("10"))), List.of(), List.of(), supplied, List.of(), List.of(), List.of());
         supplied.clear();
         assertEquals(1, result.authorizations().size());
-        assertEquals(aed("9"), result.availableOn(ACCOUNT, 1));
+        assertEquals(List.of(aed("1")), approvedHolds(result, ACCOUNT));
         assertThrows(UnsupportedOperationException.class, () -> result.authorizations().clear());
     }
 }

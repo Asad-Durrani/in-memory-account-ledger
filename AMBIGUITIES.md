@@ -59,6 +59,12 @@ Require every instalment to be positive, rejecting counts greater than the total
 in minor units. Zero-valued shares could conserve the total, but the chosen policy
 requires each instalment to represent an actual transfer.
 
+## Event identity and retries
+
+Event IDs are unique across the submitted stream. The first nonblank ID is
+reserved even if its event is rejected. Repeated IDs are rejected; corrected
+submissions require a new ID.
+
 ## Authorization decisions after backdating
 
 The specification does not say whether a later correction revisits an earlier
@@ -98,6 +104,13 @@ BHD closing balance produces an unsupported assessment while retaining the valid
 debit. No fee is guessed or silently waived. Interest for that account remains
 unfinalized because its fee-adjusted balances are unknown, even if later credits
 restore a positive balance. The supplied event stream never requires a BHD fee.
+
+## Replay results and finalization
+
+The prompt does not define replay after additional submissions. Each replay builds
+an independent projection; it does not commit or freeze the window. Submitted
+events remain append-only and earlier results remain immutable. Additional events
+may change derived fee and interest postings in the new projection.
 
 ## Daily report perspective
 

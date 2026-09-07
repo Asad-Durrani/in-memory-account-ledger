@@ -36,11 +36,6 @@ public record ReplayResult(
         return balanceOn(account(accountId), day, ledgerEntries);
     }
 
-    /** Uses final active holds from this replay, not historical authorization states. */
-    public Money availableOn(String accountId, int day) {
-        return balanceOn(accountId, day).subtract(activeHolds(account(accountId), authorizations));
-    }
-
     private Account account(String accountId) {
         return accounts.stream()
                 .filter(candidate -> candidate.accountId().equals(accountId))

@@ -59,6 +59,9 @@ following Day 6's E9. It prints both accounts for each of Days 1 through 6:
   Day 5. Backdating does not rewrite these decisions.
 - **Errors:** that processing day's rejected events. E6 reports unknown Auth-Z;
   E8 reports insufficient available balance. `none` means no item applies.
+  Rejections for unknown accounts or processing days outside the displayed range
+  appear once in an **Unassigned errors** section, with their account and processing
+  day. The section is omitted when there are no such errors.
 
 Balances and authorization states deliberately use different time perspectives:
 revised accounting balances versus original operational decisions. In particular,
@@ -77,6 +80,26 @@ Expected revised closing balances:
 
 Retained fees total AED 75.00 across Days 2, 4, and 5. Interest totals AED 0.93
 and BHD 0.008. The ordinary suite verifies these results.
+
+## Acceptance criteria
+
+Numbered in the order supplied in [ORIGINAL_PROMPT](ORIGINAL_PROMPT).
+
+| # | Criterion | Outcome and evidence |
+| --- | --- | --- |
+| 1 | Day 2 balance evaluated at end of Day 5, before fees, is AED -370.00 | Accepted; [fee tests][fee-tests] verify the Day 2 pre-fee assessment basis. |
+| 2 | E7 causes exactly one fee, on Day 2 | Rejected; Days 2, 4, and 5 incur AED 75.00 total. See [REJECTED.md, criterion 2](REJECTED.md) and [fee tests][fee-tests]. |
+| 3 | Accept Auth-A's settlement | Accepted; [authorization tests][auth-tests] verify E5 settles AED 185.00 and releases the AED 200.00 hold. |
+| 4 | Reject settlement of an unknown authorization without moving funds | Accepted; [authorization tests][auth-tests] verify E6 is rejected without a debit. |
+| 5 | If approved, Auth-B reduces available balance only | Accepted; [authorization tests][auth-tests] verify approved holds reserve funds without ledger entries. Auth-B itself is rejected in the supplied stream. |
+| 6 | E9 restores all balances and fees to pre-E7 values | Rejected under the fee-retention policy; AED 75.00 remains charged. See [REJECTED.md, criterion 6](REJECTED.md) and [fee tests][fee-tests]. |
+| 7 | Each BHD instalment is 3.334 | Rejected; [instalment tests][instalment-tests] verify 3.334 + 3.333 + 3.333 = 10.000. See [REJECTED.md, criterion 7](REJECTED.md). |
+| 8 | Discard any interest remainder | Rejected; [interest tests][interest-tests] verify capitalization equals the sum of rounded daily accruals. See [REJECTED.md, criterion 8](REJECTED.md). |
+
+[fee-tests]: src/test/java/io/github/asaddurrani/ledger/replay/OverdraftAssessmentTest.java
+[auth-tests]: src/test/java/io/github/asaddurrani/ledger/replay/AuthorizationReplayTest.java
+[instalment-tests]: src/test/java/io/github/asaddurrani/ledger/replay/InstalmentReplayTest.java
+[interest-tests]: src/test/java/io/github/asaddurrani/ledger/replay/InterestCapitalizationTest.java
 
 ## Intentionally failing design test
 

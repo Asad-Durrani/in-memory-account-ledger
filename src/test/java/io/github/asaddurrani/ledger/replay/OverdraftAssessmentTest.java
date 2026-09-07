@@ -116,7 +116,8 @@ class OverdraftAssessmentTest {
         ledger.appendEvent(credit("credit", 1, 1, "10"));
         var result = ledger.replay();
         assertEquals(aed("0"), result.balanceOn("A", 2));
-        assertEquals(aed("-10"), result.availableOn("A", 2));
+        assertEquals(Authorization.Status.APPROVED, result.authorizations().getFirst().status());
+        assertEquals(aed("10"), result.authorizations().getFirst().holdAmount());
         assertEquals(List.of(), result.feeAssessments());
     }
 

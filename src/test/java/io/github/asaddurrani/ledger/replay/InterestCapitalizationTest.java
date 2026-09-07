@@ -99,7 +99,9 @@ class InterestCapitalizationTest {
         var result = ledger.replay();
         assertEquals(List.of(aed("1"), aed("1")), accruals(result, "A"));
         assertEquals(aed("102"), result.balanceOn("A", 2));
-        assertEquals(aed("2"), result.availableOn("A", 2));
+        assertEquals(io.github.asaddurrani.ledger.model.Authorization.Status.APPROVED,
+                result.authorizations().getFirst().status());
+        assertEquals(aed("100"), result.authorizations().getFirst().holdAmount());
         assertEquals(aed("100"), result.interestAccruals().getLast().balanceBeforeCapitalization());
 
         var halfUp = new InMemoryLedger(List.of(new Account("A", aed("312.50"))),

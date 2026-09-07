@@ -605,3 +605,26 @@ below come from the Maven output and are converted to UTC.
 - Ran `./mvnw -B -ntp clean verify`: all 97 normal tests passed with no failures,
   errors, or skips; the JAR built successfully. The new test and documentation
   changes remain uncommitted. No push performed.
+
+## 2026-09-07 02:19:34 UTC — Unassigned replay errors included in reports
+
+- Added an Unassigned errors section for rejected inputs whose account is unknown
+  or whose processing day is outside the displayed range. Each line includes the
+  event ID, rejection reason, account, and processing day, preserving rejection order.
+- Omit the section when empty. Documented the output in README.
+- Added a regression covering daily errors, unknown accounts, days before/after
+  the window, overlapping account/day failures, and a shortened report range.
+  Verified each rejected event appears exactly once and the supplied scenario
+  does not acquire an empty section.
+- Ran `./mvnw -B -ntp test`: all 98 normal tests passed with no failures, errors,
+  or skips. `git diff --check` passed before this worklog entry. No commit or push.
+
+## 2026-09-07 02:26:33 UTC — Removed misleading public availability query
+
+- Removed `ReplayResult.availableOn(accountId, day)`, which combined a dated
+  ledger balance with final holds. Retained the internal calculation used when
+  deciding authorizations.
+- Updated affected tests to assert approved hold amounts, authorization states,
+  and ledger balances directly. No replacement public query was added.
+- Ran `./mvnw -B -ntp test`: all 98 normal tests passed with no failures, errors,
+  or skips. No commit or push.
