@@ -422,3 +422,34 @@ below come from the Maven output and are converted to UTC.
   releases the entire hold; positive settlement amounts cannot exceed that hold.
   These choices are documented policies, not newly implemented behavior.
 - Documentation only. `git diff --check` passed; no tests rerun, commit, or push.
+
+## 2026-09-07 01:12:08 UTC — Authorization and settlement replay verified
+
+- Added immutable authorization projections with APPROVED, REJECTED, and SETTLED
+  states. Replay owns an account-scoped authorization map; results copy the final
+  projections without exposing mutable state. Approved holds affect availability
+  but create no ledger entries.
+- Approval uses known entries through the event's processing day minus all active
+  holds and permits exactly zero remaining availability. Later backdating does not
+  rewrite prior decisions. Added a concise timing policy and extended positive
+  amount validation to holds in `AMBIGUITIES.md`.
+- Settlement of an active authorization books the actual debit at its supplied
+  value date and releases the entire hold. Reject unknown/inactive references,
+  reused authorization IDs, blank IDs, and settlement above the original hold.
+  Invalid settlements preserve the existing hold for a later valid submission.
+- Common event validation applies to both new event types. Identifiable rejected
+  authorizations reserve their IDs; duplicate/invalid event identities and unknown
+  accounts do not create authorization state. Existing authorizations are never
+  overwritten by rejected duplicate submissions.
+- Added `ReplayResult.authorizations` and `availableOn`. Availability queries use
+  final active holds from that result, not historical daily authorization states.
+  Shared balance calculations preserve the existing value-date query behavior.
+- Added 12 authorization/settlement test cases and narrowed unsupported-event
+  tests to reversal and instalment credit. Verified E1–E6 gives AED 465.00 after
+  Auth-A settles for AED 185, with Auth-Z rejected; covered exact-zero approval,
+  insufficient funds, reuse, repeated/excess settlement, account/currency isolation,
+  malformed inputs, backdating, immutable prior results, and repeatable replay.
+- Ran `./mvnw clean verify`, completed at 2026-09-07 01:11:54 UTC: all 53 tests
+  passed with no failures, errors, or skips; JAR build succeeded.
+  `git diff --check` passed. Fees, interest, reversals, instalments, and historical
+  daily reporting remain pending. README unchanged. No commit or push performed.

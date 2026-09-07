@@ -32,7 +32,7 @@ class ReplayStateTest {
     @Test
     void resultDefensivelyCopiesSuppliedEntries() {
         var supplied = new ArrayList<>(List.of(entry));
-        var result = new ReplayResult(List.of(), supplied, List.of());
+        var result = new ReplayResult(List.of(), supplied, List.of(), List.of());
 
         supplied.clear();
 

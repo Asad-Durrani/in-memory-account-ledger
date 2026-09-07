@@ -14,8 +14,8 @@ All submissions remain in history. This keeps references unambiguous.
 
 ### Posting amounts and dates
 
-Zero and negative credit/debit input amounts are unspecified. Require positive
-magnitudes; event type determines the sign, avoiding inverted debit/credit meaning.
+Zero and negative posting amounts and authorization holds are unspecified. Require
+positive magnitudes; credit/debit type determines the posting sign.
 Both dates must be within the configured window. Permit future value dates within
 that window, affecting balances only from that date; the specification does not
 require value date to precede processing day. Submission order remains authoritative.
@@ -35,6 +35,14 @@ rejected or settled authorizations. This keeps settlement references unambiguous
 while allowing different accounts to use the same ID.
 
 ## Authorization and settlement behavior
+
+### Authorization timing
+
+The specification does not define future-dated holds. Apply holds when their
+submission is processed, using the known ledger balance through the processing
+day and all active holds. This reserves funds immediately. Later backdating does
+not revisit approval or rejection; settlement of an approved hold does not repeat
+the available-balance check.
 
 ### Settlement finality and hold release
 
