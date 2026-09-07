@@ -1,4 +1,4 @@
-package io.github.asaddurrani.ledger.model;
+package io.github.asaddurrani.ledger.money;
 
 public enum Currency {
     AED(2),

@@ -1,5 +1,7 @@
 package io.github.asaddurrani.ledger.model;
 
+import io.github.asaddurrani.ledger.money.Currency;
+import io.github.asaddurrani.ledger.money.Money;
 import java.util.Objects;
 
 /** Account definition; calculated balances and journal history do not belong here. */

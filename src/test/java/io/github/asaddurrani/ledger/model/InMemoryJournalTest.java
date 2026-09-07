@@ -3,6 +3,8 @@ package io.github.asaddurrani.ledger.model;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.github.asaddurrani.ledger.money.Currency;
+import io.github.asaddurrani.ledger.money.Money;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 

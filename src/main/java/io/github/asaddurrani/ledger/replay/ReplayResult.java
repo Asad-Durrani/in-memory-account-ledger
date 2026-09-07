@@ -1,8 +1,8 @@
-package io.github.asaddurrani.ledger;
+package io.github.asaddurrani.ledger.replay;
 
 import io.github.asaddurrani.ledger.model.Account;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
-import io.github.asaddurrani.ledger.model.Money;
+import io.github.asaddurrani.ledger.money.Money;
 import java.util.List;
 
 /** Immutable entries and rejections produced by one replay, with its account definitions. */

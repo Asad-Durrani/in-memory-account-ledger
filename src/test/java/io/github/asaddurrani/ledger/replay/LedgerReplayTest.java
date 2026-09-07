@@ -1,14 +1,15 @@
-package io.github.asaddurrani.ledger;
+package io.github.asaddurrani.ledger.replay;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.github.asaddurrani.ledger.InMemoryLedger;
 import io.github.asaddurrani.ledger.model.Account;
-import io.github.asaddurrani.ledger.model.Currency;
 import io.github.asaddurrani.ledger.model.EventRecord;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
 import io.github.asaddurrani.ledger.model.LedgerSettings;
-import io.github.asaddurrani.ledger.model.Money;
+import io.github.asaddurrani.ledger.money.Currency;
+import io.github.asaddurrani.ledger.money.Money;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;

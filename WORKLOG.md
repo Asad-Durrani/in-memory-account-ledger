@@ -382,3 +382,32 @@ below come from the Maven output and are converted to UTC.
   rounding policy. Preserved the conditional basis of criterion F's rejection.
 - Documentation only; no policy or code changes. `git diff --check` passed.
   Tests were not rerun. No commit or push performed.
+
+## 2026-09-07 00:52:12 UTC — Dedicated money package
+
+- Moved `Money` and `Currency` from `ledger.model` to `ledger.money`, and moved
+  `MoneyTest` into the matching test package. Updated imports in ledger models,
+  replay classes, and tests.
+- Verified the moved files differ only in package declarations. Exact arithmetic,
+  currency precision, and rounding behavior are unchanged.
+- Ran `./mvnw clean verify`: all 43 tests passed with no failures, errors, or skips;
+  the JAR built successfully. `git diff --check` passed. No commit or push performed.
+
+## 2026-09-07 00:53:51 UTC — Dedicated replay package
+
+- Moved `LedgerReplay`, `ReplayState`, `ReplayResult`, and `ReplayError` into
+  `ledger.replay`, along with `LedgerReplayTest` and `ReplayStateTest`.
+  `InMemoryLedger` remains the root API and imports the replay entry point/result.
+- Made `LedgerReplay` and its static `replay` method public for cross-package
+  delegation. Kept `ReplayState` package-private. Processing behavior is unchanged.
+- Ran `./mvnw clean verify`: all 43 tests passed with no failures, errors, or skips;
+  the JAR built successfully. No stale root-package replay imports remain and
+  `git diff --check` passed. No commit or push performed.
+
+## 2026-09-07 00:55:14 UTC — Package reorganization prepared for commit
+
+- Reviewed the combined money/replay package moves for the user-authorized commit.
+  The root package now contains only `InMemoryLedger`; monetary values, ledger
+  models, and replay processing have separate packages with matching test locations.
+- Both moves and their successful 43-test clean builds are recorded above.
+  This commit groups the structural changes without changing financial behavior.

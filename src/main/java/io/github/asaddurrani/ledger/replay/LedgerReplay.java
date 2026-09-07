@@ -1,10 +1,10 @@
-package io.github.asaddurrani.ledger;
+package io.github.asaddurrani.ledger.replay;
 
 import io.github.asaddurrani.ledger.model.Account;
 import io.github.asaddurrani.ledger.model.EventRecord;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
 import io.github.asaddurrani.ledger.model.LedgerSettings;
-import io.github.asaddurrani.ledger.model.Money;
+import io.github.asaddurrani.ledger.money.Money;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,10 +12,10 @@ import java.util.Map;
 import java.util.Set;
 
 /** Reconstructs ledger history using fresh state for each invocation. */
-final class LedgerReplay {
+public final class LedgerReplay {
     private LedgerReplay() {}
 
-    static ReplayResult replay(
+    public static ReplayResult replay(
             List<Account> accounts, LedgerSettings settings, List<EventRecord> eventRecords) {
         var state = new ReplayState();
         var accountsById = new HashMap<String, Account>();

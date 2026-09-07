@@ -1,4 +1,4 @@
-package io.github.asaddurrani.ledger.model;
+package io.github.asaddurrani.ledger.money;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;

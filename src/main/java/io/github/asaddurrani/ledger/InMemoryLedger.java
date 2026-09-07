@@ -5,6 +5,8 @@ import io.github.asaddurrani.ledger.model.AppendOnlyJournal;
 import io.github.asaddurrani.ledger.model.EventRecord;
 import io.github.asaddurrani.ledger.model.InMemoryJournal;
 import io.github.asaddurrani.ledger.model.LedgerSettings;
+import io.github.asaddurrani.ledger.replay.LedgerReplay;
+import io.github.asaddurrani.ledger.replay.ReplayResult;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;

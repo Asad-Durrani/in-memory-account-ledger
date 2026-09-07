@@ -1,5 +1,6 @@
 package io.github.asaddurrani.ledger.model;
 
+import io.github.asaddurrani.ledger.money.Money;
 import java.util.Objects;
 
 /** A recognized monetary change; positive amounts credit and negative amounts debit. */

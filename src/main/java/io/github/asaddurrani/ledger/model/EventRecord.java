@@ -1,5 +1,6 @@
 package io.github.asaddurrani.ledger.model;
 
+import io.github.asaddurrani.ledger.money.Money;
 import java.util.Objects;
 
 /** Submitted activity. Processing day and value date are numbered accounting days. */

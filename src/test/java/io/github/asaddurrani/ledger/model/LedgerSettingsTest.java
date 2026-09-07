@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.github.asaddurrani.ledger.InMemoryLedger;
+import io.github.asaddurrani.ledger.money.Currency;
+import io.github.asaddurrani.ledger.money.Money;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;

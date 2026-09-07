@@ -1,4 +1,4 @@
-package io.github.asaddurrani.ledger.model;
+package io.github.asaddurrani.ledger.money;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

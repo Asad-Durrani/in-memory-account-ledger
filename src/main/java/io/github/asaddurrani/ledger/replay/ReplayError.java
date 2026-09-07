@@ -1,4 +1,4 @@
-package io.github.asaddurrani.ledger;
+package io.github.asaddurrani.ledger.replay;
 
 import io.github.asaddurrani.ledger.model.EventRecord;
 import java.util.Objects;
