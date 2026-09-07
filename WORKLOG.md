@@ -411,3 +411,14 @@ below come from the Maven output and are converted to UTC.
   models, and replay processing have separate packages with matching test locations.
 - Both moves and their successful 43-test clean builds are recorded above.
   This commit groups the structural changes without changing financial behavior.
+
+## 2026-09-07 01:04:02 UTC — Authorization assumptions recorded
+
+- Reorganized `AMBIGUITIES.md` into input validity/identity, authorization and
+  settlement behavior, and accounting policies. Preserved existing decisions
+  and the fee-policy heading used by `REJECTED.md`.
+- Recorded the agreed assumptions: authorization IDs are account-scoped and
+  cannot be reused, including after rejection or settlement; one settlement
+  releases the entire hold; positive settlement amounts cannot exceed that hold.
+  These choices are documented policies, not newly implemented behavior.
+- Documentation only. `git diff --check` passed; no tests rerun, commit, or push.
