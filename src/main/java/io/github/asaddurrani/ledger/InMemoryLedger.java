@@ -38,7 +38,8 @@ public final class InMemoryLedger {
      * submitted immutable event history in insertion order. Each invocation uses
      * fresh state, so the same history must produce the same result without duplicates.
      * All modeled input event types are supported.
-     * Overdraft fees are assessed through the closing day; interest remains pending.
+     * Overdraft fees are assessed through the closing day, then revised daily
+     * interest is summed and capitalized for accounts with a defined fee policy.
      */
     public ReplayResult replay() {
         return LedgerReplay.replay(accounts, settings, eventRecords.records());

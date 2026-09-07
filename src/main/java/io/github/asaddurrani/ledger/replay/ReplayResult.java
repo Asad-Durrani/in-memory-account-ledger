@@ -2,6 +2,7 @@ package io.github.asaddurrani.ledger.replay;
 
 import io.github.asaddurrani.ledger.model.Account;
 import io.github.asaddurrani.ledger.model.Authorization;
+import io.github.asaddurrani.ledger.model.InterestAccrual;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
 import io.github.asaddurrani.ledger.model.FeeAssessment;
 import io.github.asaddurrani.ledger.money.Money;
@@ -10,13 +11,15 @@ import java.util.List;
 /** Immutable entries and rejections produced by one replay, with its account definitions. */
 public record ReplayResult(
         List<Account> accounts, List<LedgerEntry> ledgerEntries, List<ReplayError> errors,
-        List<Authorization> authorizations, List<FeeAssessment> feeAssessments) {
+        List<Authorization> authorizations, List<FeeAssessment> feeAssessments,
+        List<InterestAccrual> interestAccruals) {
     public ReplayResult {
         accounts = List.copyOf(accounts);
         ledgerEntries = List.copyOf(ledgerEntries);
         errors = List.copyOf(errors);
         authorizations = List.copyOf(authorizations);
         feeAssessments = List.copyOf(feeAssessments);
+        interestAccruals = List.copyOf(interestAccruals);
     }
 
     /**

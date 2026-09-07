@@ -8,7 +8,6 @@ import io.github.asaddurrani.ledger.model.EventRecord;
 import io.github.asaddurrani.ledger.model.LedgerSettings;
 import io.github.asaddurrani.ledger.money.Currency;
 import io.github.asaddurrani.ledger.money.Money;
-import io.github.asaddurrani.ledger.replay.ReplayResult;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -90,7 +89,9 @@ class InMemoryLedgerTest {
         var first = ledger.replay();
         var second = ledger.replay();
 
-        assertEquals(new ReplayResult(List.of(aed), List.of(), List.of(), List.of(), List.of()), first);
+        assertEquals(List.of(aed), first.accounts());
+        assertEquals(List.of(), first.ledgerEntries());
+        assertEquals(6, first.interestAccruals().size());
         assertEquals(first, second);
         assertThrows(UnsupportedOperationException.class, () -> first.ledgerEntries().clear());
         assertEquals(List.of(), ledger.eventRecords());

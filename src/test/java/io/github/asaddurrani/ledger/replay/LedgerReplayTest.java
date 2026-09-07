@@ -15,6 +15,12 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class LedgerReplayTest {
+    // Keep these tests focused on postings/fees; InterestCapitalizationTest covers interest integration.
+    private static LedgerSettings withoutInterest(int closingDay) {
+        return new LedgerSettings(closingDay, Money.of(Currency.AED, "25"),
+                java.math.BigDecimal.ZERO, java.math.RoundingMode.HALF_EVEN);
+    }
+
     // These posting-focused cases exclude fees; OverdraftAssessmentTest covers fee interactions.
     private static LedgerSettings withoutFees() {
         return new LedgerSettings(6, Money.of(Currency.AED, "0"),
@@ -25,7 +31,7 @@ class LedgerReplayTest {
     private final Account bhd = new Account("ACC-002", Money.of(Currency.BHD, "0.001"));
 
     private InMemoryLedger ledger() {
-        return new InMemoryLedger(List.of(aed, bhd), LedgerSettings.forWindow(6));
+        return new InMemoryLedger(List.of(aed, bhd), withoutInterest(6));
     }
 
     private static EventRecord credit(String id, String accountId, int processingDay, int valueDate,
@@ -145,7 +151,7 @@ class LedgerReplayTest {
         var errors = new ArrayList<ReplayError>();
         var event = credit("bad", "missing", 1, 1, Currency.AED, "1");
         errors.add(new ReplayError(event, ReplayError.Reason.UNKNOWN_ACCOUNT));
-        var result = new ReplayResult(accounts, entries, errors, List.of(), List.of());
+        var result = new ReplayResult(accounts, entries, errors, List.of(), List.of(), List.of());
         accounts.clear();
         entries.add(new LedgerEntry("later", aed.accountId(), Money.of(Currency.AED, "1"),
                 1, new LedgerEntry.Source.InputEvent("later")));

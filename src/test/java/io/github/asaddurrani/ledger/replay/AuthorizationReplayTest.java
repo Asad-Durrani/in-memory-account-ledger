@@ -18,6 +18,12 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class AuthorizationReplayTest {
+    // Keep these tests focused on postings/fees; InterestCapitalizationTest covers interest integration.
+    private static LedgerSettings withoutInterest(int closingDay) {
+        return new LedgerSettings(closingDay, Money.of(Currency.AED, "25"),
+                java.math.BigDecimal.ZERO, java.math.RoundingMode.HALF_EVEN);
+    }
+
     // These posting-focused cases exclude fees; OverdraftAssessmentTest covers fee interactions.
     private static LedgerSettings withoutFees() {
         return new LedgerSettings(6, Money.of(Currency.AED, "0"),
@@ -31,7 +37,7 @@ class AuthorizationReplayTest {
     }
 
     private static InMemoryLedger ledger(String opening) {
-        return new InMemoryLedger(List.of(new Account(ACCOUNT, aed(opening))), LedgerSettings.forWindow(6));
+        return new InMemoryLedger(List.of(new Account(ACCOUNT, aed(opening))), withoutInterest(6));
     }
 
     private static EventRecord auth(String id, String authId, String amount) {
@@ -156,7 +162,7 @@ class AuthorizationReplayTest {
     @Test
     void authorizationIdsAreScopedToAccountAndCurrenciesCannotCross() {
         var ledger = new InMemoryLedger(List.of(new Account(ACCOUNT, aed("100")),
-                new Account("BHD", Money.of(Currency.BHD, "10"))), LedgerSettings.forWindow(6));
+                new Account("BHD", Money.of(Currency.BHD, "10"))), withoutInterest(6));
         ledger.appendEvent(auth("a", "shared", "50"));
         ledger.appendEvent(new EventRecord("b", "BHD", 2, 2,
                 new EventRecord.Details.Authorization("shared", Money.of(Currency.BHD, "5.001"))));
@@ -215,7 +221,7 @@ class AuthorizationReplayTest {
     void authorizationResultsAreDefensivelyCopiedAndImmutable() {
         var supplied = new ArrayList<>(List.of(new Authorization(ACCOUNT, "A", "a", aed("1"),
                 Authorization.Status.APPROVED)));
-        var result = new ReplayResult(List.of(new Account(ACCOUNT, aed("10"))), List.of(), List.of(), supplied, List.of());
+        var result = new ReplayResult(List.of(new Account(ACCOUNT, aed("10"))), List.of(), List.of(), supplied, List.of(), List.of());
         supplied.clear();
         assertEquals(1, result.authorizations().size());
         assertEquals(aed("9"), result.availableOn(ACCOUNT, 1));

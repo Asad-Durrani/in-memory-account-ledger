@@ -57,6 +57,7 @@ public final class LedgerReplay {
             }
         }
         OverdraftAssessment.closeThrough(state, accounts, settings, settings.closingDay());
+        InterestCapitalization.capitalize(state, accounts, settings);
         return state.toResult(accounts);
     }
 

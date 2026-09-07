@@ -6,6 +6,7 @@ import io.github.asaddurrani.ledger.model.AppendOnlyJournal;
 import io.github.asaddurrani.ledger.model.EventRecord;
 import io.github.asaddurrani.ledger.model.FeeAssessment;
 import io.github.asaddurrani.ledger.model.InMemoryJournal;
+import io.github.asaddurrani.ledger.model.InterestAccrual;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
 import io.github.asaddurrani.ledger.money.Money;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ final class ReplayState {
     private final Map<AuthorizationKey, Authorization> authorizations = new LinkedHashMap<>();
     private final Map<String, EventRecord> acceptedDebits = new HashMap<>();
     private final Set<String> reversedDebits = new HashSet<>();
+    private final List<InterestAccrual> interestAccruals = new ArrayList<>();
     private final List<ReplayError> errors = new ArrayList<>();
 
     int closedThrough() {
@@ -48,6 +50,15 @@ final class ReplayState {
 
     void recordFeeAssessment(FeeAssessment assessment) {
         feeAssessments.put(new FeeKey(assessment.accountId(), assessment.accountingDay()), assessment);
+    }
+
+    boolean hasUnsupportedFeeAssessment(String accountId) {
+        return feeAssessments.values().stream()
+                .anyMatch(assessment -> assessment.accountId().equals(accountId) && assessment.feeAmount().isEmpty());
+    }
+
+    void recordInterestAccrual(InterestAccrual accrual) {
+        interestAccruals.add(accrual);
     }
 
     void reject(ReplayError error) {
@@ -94,6 +105,6 @@ final class ReplayState {
 
     ReplayResult toResult(List<Account> accounts) {
         return new ReplayResult(accounts, ledgerEntries(), errors, List.copyOf(authorizations.values()),
-                List.copyOf(feeAssessments.values()));
+                List.copyOf(feeAssessments.values()), interestAccruals);
     }
 }

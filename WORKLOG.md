@@ -536,3 +536,31 @@ below come from the Maven output and are converted to UTC.
   JAR build succeeded. `git diff --check` passed. Existing ambiguity policies were
   sufficient; README unchanged. Interest and daily reporting remain pending.
   No commit or push performed.
+
+## 2026-09-07 01:49:37 UTC — Daily interest and capitalization verified
+
+- Added `InterestCapitalization` after all submitted events and day-close fee
+  assessment. Calculate each day's positive ledger balance from the completed
+  pre-capitalization entries, including retained fees and late/backdated activity.
+  Holds do not reduce the interest basis; zero and negative balances accrue zero.
+- Round each daily calculation explicitly to the account currency precision using
+  the configured rate and rounding mode. Sum the resulting Money values exactly
+  and append one positive capitalization credit per account at the closing day.
+  Zero totals create no financial entry. The credit never earns interest itself.
+- Added immutable `InterestAccrual` results with the daily pre-capitalization basis.
+  An absent amount denotes unfinalized interest for an account with unresolved
+  fee assessments. Such accounts receive no capitalization; valid event postings
+  remain present and other accounts finalize normally. Added this consequence to
+  the existing BHD ambiguity entry; no supplied-scenario policy remained unresolved.
+- Added 12 tests for the full scenario, daily sum conservation, AED/BHD half-even
+  ties, large exact amounts, configurable rate/rounding, no daily compounding,
+  holds, backdating/reversal, zero/negative balances, future value dates, zero rate,
+  unsupported BHD fee consequences, immutable results, and repeatable replay.
+- Earlier posting and fee tests now explicitly use zero interest where needed to
+  retain their focused assertions; the new integration test uses specified settings.
+- Full E1–E10 verification: daily AED accruals 0.10, 0.09, 0.25, 0.17, 0.16, 0.16
+  total AED 0.93. BHD accrues 0.004 on each of Days 5 and 6, totaling 0.008.
+  Final balances are AED 390.93 and BHD 10.008; retained fees remain AED 75.
+- Ran `./mvnw clean verify`: all 95 tests passed with no failures, errors, or skips;
+  JAR build succeeded. `git diff --check` passed. Runnable daily reporting and
+  remaining deliverable checks are still pending. README unchanged. No commit or push.

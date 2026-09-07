@@ -16,8 +16,14 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 class InstalmentReplayTest {
+    // Keep these tests focused on postings/fees; InterestCapitalizationTest covers interest integration.
+    private static LedgerSettings withoutInterest(int closingDay) {
+        return new LedgerSettings(closingDay, Money.of(Currency.AED, "25"),
+                java.math.BigDecimal.ZERO, java.math.RoundingMode.HALF_EVEN);
+    }
+
     private static InMemoryLedger ledger(Currency currency) {
-        return new InMemoryLedger(List.of(new Account("A", Money.of(currency, "0"))), LedgerSettings.forWindow(6));
+        return new InMemoryLedger(List.of(new Account("A", Money.of(currency, "0"))), withoutInterest(6));
     }
 
     private static EventRecord instalments(String id, Currency currency, String total, int count) {

@@ -113,4 +113,5 @@ is a policy, not a prompt requirement.
 Only an AED fee is supplied; neither a BHD fee nor an exchange rate is defined.
 If a BHD closing balance is negative, report unsupported fee assessment without
 inventing a fee or silently waiving it. This does not invalidate the debit.
-The supplied scenario never requires a BHD fee.
+Interest for that account also remains unfinalized because the fee-adjusted
+balances are unknown. The supplied scenario never requires a BHD fee.

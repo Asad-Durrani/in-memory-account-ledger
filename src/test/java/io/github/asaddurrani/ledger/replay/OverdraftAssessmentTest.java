@@ -21,10 +21,16 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
 class OverdraftAssessmentTest {
+    // Keep these tests focused on postings/fees; InterestCapitalizationTest covers interest integration.
+    private static LedgerSettings withoutInterest(int closingDay) {
+        return new LedgerSettings(closingDay, Money.of(Currency.AED, "25"),
+                java.math.BigDecimal.ZERO, java.math.RoundingMode.HALF_EVEN);
+    }
+
     private static Money aed(String amount) { return Money.of(Currency.AED, amount); }
 
     private static InMemoryLedger ledger(String opening, int closingDay) {
-        return new InMemoryLedger(List.of(new Account("A", aed(opening))), LedgerSettings.forWindow(closingDay));
+        return new InMemoryLedger(List.of(new Account("A", aed(opening))), withoutInterest(closingDay));
     }
 
     private static EventRecord credit(String id, int processingDay, int valueDate, String amount) {
@@ -55,7 +61,7 @@ class OverdraftAssessmentTest {
     @Test
     void fullScenarioRetainsThreeFeesAfterReversalAndLateE10WithoutDuplicatingOnReplay() {
         var ledger = new InMemoryLedger(List.of(new Account("A", aed("0")),
-                new Account("B", Money.of(Currency.BHD, "0"))), LedgerSettings.forWindow(6));
+                new Account("B", Money.of(Currency.BHD, "0"))), withoutInterest(6));
         scenario().forEach(ledger::appendEvent);
         var result = ledger.replay();
         assertEquals(List.of(2, 4, 5), fees(result).stream().map(LedgerEntry::valueDate).toList());
@@ -117,7 +123,7 @@ class OverdraftAssessmentTest {
     @Test
     void emptyHistoryAssessesNegativeOpeningBalancesAndSkippedDaysPerAccount() {
         var ledger = new InMemoryLedger(List.of(new Account("A", aed("-1")),
-                new Account("B", aed("-2")), new Account("C", aed("0"))), LedgerSettings.forWindow(3));
+                new Account("B", aed("-2")), new Account("C", aed("0"))), withoutInterest(3));
         var result = ledger.replay();
         assertEquals(6, fees(result).size());
         assertEquals(List.of("A", "B", "A", "B", "A", "B"),
@@ -168,7 +174,7 @@ class OverdraftAssessmentTest {
     @Test
     void unsupportedBhdAssessmentIsExplicitAndDoesNotRejectDebitOrInventFee() {
         var ledger = new InMemoryLedger(List.of(new Account("B", Money.of(Currency.BHD, "0"))),
-                LedgerSettings.forWindow(3));
+                withoutInterest(3));
         var debit = new EventRecord("d", "B", 3, 1, new EventRecord.Details.Debit(Money.of(Currency.BHD, "1")));
         ledger.appendEvent(debit);
         ledger.appendEvent(new EventRecord("r", "B", 3, 1, new EventRecord.Details.DebitReversal("d")));
@@ -198,7 +204,7 @@ class OverdraftAssessmentTest {
     @Test
     void resultDefensivelyCopiesFeeAssessments() {
         var assessments = new ArrayList<>(List.of(new FeeAssessment("A", 1, aed("-1"), Optional.of(aed("25")))));
-        var result = new ReplayResult(List.of(), List.of(), List.of(), List.of(), assessments);
+        var result = new ReplayResult(List.of(), List.of(), List.of(), List.of(), assessments, List.of());
         assessments.clear();
         assertEquals(1, result.feeAssessments().size());
         assertThrows(UnsupportedOperationException.class, () -> result.feeAssessments().clear());
