@@ -10,7 +10,7 @@ dependencies on the first run, which requires internet access.
 
 Run from the repository root:
 
-```sh
+```
 ./mvnw test
 java -cp target/classes io.github.asaddurrani.ledger.report.ScenarioReport
 ```
@@ -43,7 +43,7 @@ Expected final balances are **AED 390.93** and **BHD 10.008**. Retained fees tot
 
 ## Run the intentionally failing test
 
-```sh
+```
 ./mvnw -Dtest=IntentionalDesignFailure test
 ```
 
