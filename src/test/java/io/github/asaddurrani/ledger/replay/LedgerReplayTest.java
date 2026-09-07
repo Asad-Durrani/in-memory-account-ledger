@@ -12,10 +12,7 @@ import io.github.asaddurrani.ledger.money.Currency;
 import io.github.asaddurrani.ledger.money.Money;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 class LedgerReplayTest {
     private final Account aed = new Account("ACC-001", Money.of(Currency.AED, "0"));
@@ -133,28 +130,6 @@ class LedgerReplayTest {
                 result.errors().stream().map(ReplayError::reason).toList());
         assertEquals(result, ledger.replay());
         assertEquals(5, ledger.eventRecords().size());
-    }
-
-    static Stream<EventRecord.Details> unsupportedDetails() {
-        var amount = Money.of(Currency.AED, "1");
-        return Stream.of(new EventRecord.Details.InstalmentCredit(amount, 3));
-    }
-
-    @ParameterizedTest
-    @MethodSource("unsupportedDetails")
-    void unsupportedEventsFailExplicitlyWithoutChangingHistoryOrEarlierResults(EventRecord.Details details) {
-        var ledger = ledger();
-        ledger.appendEvent(credit("E1", aed.accountId(), 1, 1, Currency.AED, "10"));
-        var before = ledger.replay();
-        ledger.appendEvent(new EventRecord("unsupported", aed.accountId(), 2, 2, details));
-        var history = ledger.eventRecords();
-
-        var error = assertThrows(UnsupportedOperationException.class, ledger::replay);
-        assertEquals("Event type is not implemented yet: " + details.getClass().getSimpleName(),
-                error.getMessage());
-        assertThrows(UnsupportedOperationException.class, ledger::replay);
-        assertEquals(history, ledger.eventRecords());
-        assertEquals(Money.of(Currency.AED, "10"), before.balanceOn(aed.accountId(), 2));
     }
 
     @Test

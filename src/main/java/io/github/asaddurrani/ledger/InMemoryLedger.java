@@ -37,8 +37,8 @@ public final class InMemoryLedger {
      * Reconstructs the ledger history that would have been booked by processing
      * submitted immutable event history in insertion order. Each invocation uses
      * fresh state, so the same history must produce the same result without duplicates.
-     * Credits, debits, authorizations, settlements, and debit reversals are supported.
-     * Instalments, fees, and interest are not implemented yet.
+     * All modeled input event types are supported.
+     * Fees and interest are not implemented yet.
      */
     public ReplayResult replay() {
         return LedgerReplay.replay(accounts, settings, eventRecords.records());

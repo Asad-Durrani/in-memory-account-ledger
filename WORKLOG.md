@@ -484,3 +484,25 @@ below come from the Maven output and are converted to UTC.
 - Ran `./mvnw clean verify`: all 58 tests passed with no failures, errors, or skips;
   JAR build succeeded. `git diff --check` passed and no old reversal type references
   remain in source. Fees, interest, and instalments remain pending. No commit or push.
+
+## 2026-09-07 01:33:07 UTC — Positive instalment credit allocation verified
+
+- Implemented instalment credits using exact integer minor-unit division and
+  earliest-first remainder allocation. E10 produces BHD 3.334, 3.333, and 3.333,
+  each using the supplied value date and input-event source. Entry IDs include
+  deterministic one-based instalment positions.
+- Reject nonpositive counts and counts exceeding the total's minor units before
+  appending entries. Recorded the chosen rationale in `AMBIGUITIES.md`: each
+  instalment represents a positive transfer; zero shares could conserve the total
+  but are intentionally disallowed, not prohibited by the original prompt.
+- Common account, currency, amount, date, and event-ID validation applies. Monetary
+  amounts remain exact BigDecimal values; allocation uses BigInteger to avoid
+  narrowing large totals. Money construction and rounding behavior are unchanged.
+- Added 15 instalment test cases covering E10, multiple remainder units, exact
+  division, one-minor-unit shares, single instalments, large totals, zero-share
+  rejection, invalid counts/amounts, duplicate events, validation, and replay
+  repeatability. Removed the obsolete unsupported-instalment test.
+- Ran `./mvnw clean verify`: all 72 tests passed with no failures, errors, or skips;
+  JAR build succeeded. `git diff --check` passed. All modeled input event types
+  now have processing paths; fee assessment, interest, and daily reporting remain
+  pending. README unchanged. No commit or push performed.

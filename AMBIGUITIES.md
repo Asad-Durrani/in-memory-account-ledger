@@ -103,6 +103,11 @@ The unspecified choice is where the remainder goes. Allocate extra minor units
 to the earliest instalments: 3.334, 3.333, 3.333, all value-dated Day 5. Allocating
 the remainder last would also conserve the total; earliest-first is a convention.
 
+Require positive instalments: reject a count exceeding the total's minor units.
+Zero-valued shares could conserve the total and count, but represent no transfer;
+we choose to make every instalment an actual positive credit. This restriction
+is a policy, not a prompt requirement.
+
 ### BHD overdraft fee
 
 Only an AED fee is supplied; neither a BHD fee nor an exchange rate is defined.

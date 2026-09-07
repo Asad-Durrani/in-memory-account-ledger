@@ -25,6 +25,8 @@ public record ReplayError(EventRecord event, Reason reason) {
         AUTHORIZATION_NOT_ACTIVE,
         SETTLEMENT_EXCEEDS_HOLD,
         INVALID_REVERSAL_TARGET,
-        DEBIT_ALREADY_REVERSED
+        DEBIT_ALREADY_REVERSED,
+        INVALID_INSTALMENT_COUNT,
+        ZERO_VALUE_INSTALMENT
     }
 }

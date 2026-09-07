@@ -6,6 +6,8 @@ import io.github.asaddurrani.ledger.model.EventRecord;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
 import io.github.asaddurrani.ledger.model.LedgerSettings;
 import io.github.asaddurrani.ledger.money.Money;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -26,9 +28,6 @@ public final class LedgerReplay {
         var seenEventIds = new HashSet<String>();
 
         for (EventRecord event : eventRecords) {
-            if (event.details() instanceof EventRecord.Details.InstalmentCredit) {
-                throw new UnsupportedOperationException("Event type is not implemented yet: InstalmentCredit");
-            }
             ReplayError.Reason rejection = validate(event, accountsById, settings, seenEventIds);
             if (rejection != null) {
                 retainRejectedAuthorization(event, accountsById, state, rejection);
@@ -46,7 +45,7 @@ public final class LedgerReplay {
                         authorize(state, accountsById.get(event.accountId()), event, authorization);
                 case EventRecord.Details.Settlement settlement -> settle(state, event, settlement);
                 case EventRecord.Details.DebitReversal reversal -> reverseDebit(state, event, reversal);
-                default -> throw new AssertionError("Unsupported event passed dispatch");
+                case EventRecord.Details.InstalmentCredit instalments -> postInstalments(state, event, instalments);
             }
         }
         return state.toResult(accounts);
@@ -57,6 +56,30 @@ public final class LedgerReplay {
         Money signedAmount = debit ? new Money(amount.currency(), amount.amount().negate()) : amount;
         state.appendLedgerEntry(new LedgerEntry(event.eventId() + ":" + type, event.accountId(),
                 signedAmount, event.valueDate(), new LedgerEntry.Source.InputEvent(event.eventId())));
+    }
+
+    private static void postInstalments(
+            ReplayState state, EventRecord event, EventRecord.Details.InstalmentCredit details) {
+        int count = details.instalmentCount();
+        if (count <= 0) {
+            state.reject(new ReplayError(event, ReplayError.Reason.INVALID_INSTALMENT_COUNT));
+            return;
+        }
+        Money total = details.totalAmount();
+        // Money has already normalized the scale to its currency precision.
+        BigInteger minorUnits = total.amount().unscaledValue();
+        BigInteger divisor = BigInteger.valueOf(count);
+        if (minorUnits.compareTo(divisor) < 0) {
+            state.reject(new ReplayError(event, ReplayError.Reason.ZERO_VALUE_INSTALMENT));
+            return;
+        }
+        BigInteger[] allocation = minorUnits.divideAndRemainder(divisor);
+        int remainder = allocation[1].intValueExact();
+        for (int index = 0; index < count; index++) {
+            BigInteger share = index < remainder ? allocation[0].add(BigInteger.ONE) : allocation[0];
+            Money amount = new Money(total.currency(), new BigDecimal(share, total.currency().decimalPlaces()));
+            appendPosting(state, event, amount, "instalment:" + (index + 1), false);
+        }
     }
 
     private static void reverseDebit(
@@ -158,7 +181,8 @@ public final class LedgerReplay {
             case EventRecord.Details.Debit debit -> debit.amount();
             case EventRecord.Details.Authorization authorization -> authorization.holdAmount();
             case EventRecord.Details.Settlement settlement -> settlement.amount();
-            default -> throw new AssertionError("Unsupported event passed validation");
+            case EventRecord.Details.InstalmentCredit instalments -> instalments.totalAmount();
+            case EventRecord.Details.DebitReversal ignored -> throw new AssertionError("Reversal already validated");
         };
         if (amount.currency() != account.currency()) {
             return ReplayError.Reason.CURRENCY_MISMATCH;
