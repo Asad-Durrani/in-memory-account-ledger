@@ -339,3 +339,46 @@ below come from the Maven output and are converted to UTC.
 - Ran `./mvnw clean verify`: 35 tests passed with no failures, errors, or skips,
   and the JAR built successfully. Checked all 17 Java files for whitespace and
   conflict markers; `git diff --check` passed. No staging, commit, or push performed.
+
+## 2026-09-07 00:39:37 UTC — Basic credit/debit replay verified
+
+- Implemented insertion-order credit/debit processing using fresh replay state.
+  Accepted credits append positive entries and debits append negative entries;
+  direct debits may overdraw. Entry IDs derive from event IDs and posting type,
+  and each entry retains its input-event source and supplied value date.
+- Added immutable `ReplayError` records with typed reasons. Invalid credit/debit
+  submissions remain in input history, produce one rejection each, and do not
+  prevent later valid submissions from booking. Unsupported event types still
+  throw explicitly without returning a partial result.
+- Validated event identity, account existence, processing/value dates within the
+  configured window, currency agreement, and strictly positive input amounts.
+  Documented first-occurrence duplicate-ID handling, validation precedence,
+  future in-window value dates, and other selected policies in `AMBIGUITIES.md`.
+- Extended `ReplayResult` with immutable account definitions and errors, plus
+  `balanceOn(accountId, day)`: opening balance plus applicable value-dated entries.
+  Queries use the history known after this replay; later submissions do not change
+  earlier results. Queries beyond the window only carry forward existing entries.
+- Replaced the obsolete test rejecting all nonempty replay with focused credit/debit
+  tests. Verified the E7 backdated debit yields Day 2 AED -370.00 before fees,
+  preserves the earlier entry prefix, and produces equal results across repeated
+  replay. Also covered nonmonotonic dates, account isolation, opening balances,
+  invalid inputs, duplicate IDs, immutable collections, and all unsupported types.
+- Ran `./mvnw clean verify`, completed at 2026-09-07 00:39:30 UTC:
+  43 tests passed with no failures, errors, or skips; JAR build succeeded.
+  `git diff --check` passed.
+- Account and Money semantics remain unchanged. Authorization, settlement,
+  reversal, instalment processing, fees, interest, and the final daily report are
+  not implemented in this increment. Updated policy-document status accordingly;
+  README was left unchanged. No commit or push performed.
+
+## 2026-09-07 00:43:51 UTC — Policy documents tightened
+
+- Reduced `AMBIGUITIES.md` to material specification gaps, selected policies, and
+  their consequences. Removed API mechanics, validation sequencing, progress
+  reporting, and speculative extensions; implementation history remains here.
+- Reduced `REJECTED.md` to criteria B/F/G/H with supporting reasoning and the
+  actually replaced account-local journal approach. Removed the accepted-criteria
+  table and the unimplemented truncation alternative, already covered by the
+  rounding policy. Preserved the conditional basis of criterion F's rejection.
+- Documentation only; no policy or code changes. `git diff --check` passed.
+  Tests were not rerun. No commit or push performed.

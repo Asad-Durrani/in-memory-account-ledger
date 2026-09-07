@@ -19,12 +19,12 @@ class ReplayStateTest {
     void separateReplayStatesDoNotShareEntriesAndEarlierResultsRemainUnchanged() {
         var first = new ReplayState();
         var second = new ReplayState();
-        var beforeAppend = first.toResult();
+        var beforeAppend = first.toResult(List.of());
 
         first.appendLedgerEntry(entry);
 
-        assertEquals(List.of(entry), first.toResult().ledgerEntries());
-        assertEquals(List.of(), second.toResult().ledgerEntries());
+        assertEquals(List.of(entry), first.toResult(List.of()).ledgerEntries());
+        assertEquals(List.of(), second.toResult(List.of()).ledgerEntries());
         assertEquals(List.of(), beforeAppend.ledgerEntries());
         assertThrows(UnsupportedOperationException.class, () -> first.ledgerEntries().clear());
     }
@@ -32,7 +32,7 @@ class ReplayStateTest {
     @Test
     void resultDefensivelyCopiesSuppliedEntries() {
         var supplied = new ArrayList<>(List.of(entry));
-        var result = new ReplayResult(supplied);
+        var result = new ReplayResult(List.of(), supplied, List.of());
 
         supplied.clear();
 

@@ -89,25 +89,10 @@ class InMemoryLedgerTest {
         var first = ledger.replay();
         var second = ledger.replay();
 
-        assertEquals(new ReplayResult(List.of()), first);
+        assertEquals(new ReplayResult(List.of(aed), List.of(), List.of()), first);
         assertEquals(first, second);
         assertThrows(UnsupportedOperationException.class, () -> first.ledgerEntries().clear());
         assertEquals(List.of(), ledger.eventRecords());
-    }
-
-    @Test
-    void nonemptyReplayExplicitlyRejectsUnimplementedProcessingWithoutChangingHistory() {
-        var ledger = new InMemoryLedger(List.of(aed), LedgerSettings.forWindow(6));
-        var emptyResult = ledger.replay();
-        var credit = new EventRecord("E1", aed.accountId(), 1, 1,
-                new EventRecord.Details.Credit(Money.of(Currency.AED, "1200")));
-        ledger.appendEvent(credit);
-
-        var exception = assertThrows(UnsupportedOperationException.class, ledger::replay);
-        assertEquals("Financial event replay is not implemented yet", exception.getMessage());
-        assertThrows(UnsupportedOperationException.class, ledger::replay);
-        assertEquals(List.of(credit), ledger.eventRecords());
-        assertEquals(List.of(), emptyResult.ledgerEntries());
     }
 
     @Test
