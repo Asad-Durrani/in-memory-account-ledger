@@ -137,8 +137,7 @@ class LedgerReplayTest {
 
     static Stream<EventRecord.Details> unsupportedDetails() {
         var amount = Money.of(Currency.AED, "1");
-        return Stream.of(new EventRecord.Details.Reversal("E1"),
-                new EventRecord.Details.InstalmentCredit(amount, 3));
+        return Stream.of(new EventRecord.Details.InstalmentCredit(amount, 3));
     }
 
     @ParameterizedTest

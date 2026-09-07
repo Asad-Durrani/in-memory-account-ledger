@@ -40,9 +40,9 @@ public record EventRecord(
             }
         }
 
-        record Reversal(String referencedEventId) implements Details {
-            public Reversal {
-                Objects.requireNonNull(referencedEventId, "referencedEventId");
+        record DebitReversal(String debitEventId) implements Details {
+            public DebitReversal {
+                Objects.requireNonNull(debitEventId, "debitEventId");
             }
         }
 

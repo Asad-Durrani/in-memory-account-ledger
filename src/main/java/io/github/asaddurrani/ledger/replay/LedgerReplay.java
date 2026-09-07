@@ -26,16 +26,10 @@ public final class LedgerReplay {
         var seenEventIds = new HashSet<String>();
 
         for (EventRecord event : eventRecords) {
-            Money amount = switch (event.details()) {
-                case EventRecord.Details.Credit credit -> credit.amount();
-                case EventRecord.Details.Debit debit -> debit.amount();
-                case EventRecord.Details.Authorization authorization -> authorization.holdAmount();
-                case EventRecord.Details.Settlement settlement -> settlement.amount();
-                default -> throw new UnsupportedOperationException(
-                        "Event type is not implemented yet: "
-                                + event.details().getClass().getSimpleName());
-            };
-            ReplayError.Reason rejection = validate(event, amount, accountsById, settings, seenEventIds);
+            if (event.details() instanceof EventRecord.Details.InstalmentCredit) {
+                throw new UnsupportedOperationException("Event type is not implemented yet: InstalmentCredit");
+            }
+            ReplayError.Reason rejection = validate(event, accountsById, settings, seenEventIds);
             if (rejection != null) {
                 retainRejectedAuthorization(event, accountsById, state, rejection);
                 state.reject(new ReplayError(event, rejection));
@@ -43,11 +37,15 @@ public final class LedgerReplay {
             }
 
             switch (event.details()) {
-                case EventRecord.Details.Credit credit -> appendPosting(state, event, amount, "credit", false);
-                case EventRecord.Details.Debit debit -> appendPosting(state, event, amount, "debit", true);
+                case EventRecord.Details.Credit credit -> appendPosting(state, event, credit.amount(), "credit", false);
+                case EventRecord.Details.Debit debit -> {
+                    appendPosting(state, event, debit.amount(), "debit", true);
+                    state.recordAcceptedDebit(event);
+                }
                 case EventRecord.Details.Authorization authorization ->
                         authorize(state, accountsById.get(event.accountId()), event, authorization);
                 case EventRecord.Details.Settlement settlement -> settle(state, event, settlement);
+                case EventRecord.Details.DebitReversal reversal -> reverseDebit(state, event, reversal);
                 default -> throw new AssertionError("Unsupported event passed dispatch");
             }
         }
@@ -59,6 +57,22 @@ public final class LedgerReplay {
         Money signedAmount = debit ? new Money(amount.currency(), amount.amount().negate()) : amount;
         state.appendLedgerEntry(new LedgerEntry(event.eventId() + ":" + type, event.accountId(),
                 signedAmount, event.valueDate(), new LedgerEntry.Source.InputEvent(event.eventId())));
+    }
+
+    private static void reverseDebit(
+            ReplayState state, EventRecord event, EventRecord.Details.DebitReversal reversal) {
+        EventRecord debit = state.acceptedDebit(reversal.debitEventId());
+        if (debit == null || !debit.accountId().equals(event.accountId())) {
+            state.reject(new ReplayError(event, ReplayError.Reason.INVALID_REVERSAL_TARGET));
+        } else if (state.isReversed(debit.eventId())) {
+            state.reject(new ReplayError(event, ReplayError.Reason.DEBIT_ALREADY_REVERSED));
+        } else {
+            // Only accepted direct debits enter this index. The reversal supplies
+            // its own value date and source; the original posting remains intact.
+            Money amount = ((EventRecord.Details.Debit) debit.details()).amount();
+            appendPosting(state, event, amount, "reversal", false);
+            state.markReversed(debit.eventId());
+        }
     }
 
     private static void authorize(ReplayState state, Account account, EventRecord event,
@@ -118,7 +132,7 @@ public final class LedgerReplay {
 
     /** Report the first validation failure; the first nonblank ID reserves that identity. */
     private static ReplayError.Reason validate(
-            EventRecord event, Money amount, Map<String, Account> accounts,
+            EventRecord event, Map<String, Account> accounts,
             LedgerSettings settings, Set<String> seenEventIds) {
         if (event.eventId().isBlank()) {
             return ReplayError.Reason.INVALID_EVENT_ID;
@@ -136,6 +150,16 @@ public final class LedgerReplay {
         if (event.valueDate() < 1 || event.valueDate() > settings.closingDay()) {
             return ReplayError.Reason.INVALID_VALUE_DATE;
         }
+        if (event.details() instanceof EventRecord.Details.DebitReversal) {
+            return null; // Amount and currency come from the accepted debit, not the reversal input.
+        }
+        Money amount = switch (event.details()) {
+            case EventRecord.Details.Credit credit -> credit.amount();
+            case EventRecord.Details.Debit debit -> debit.amount();
+            case EventRecord.Details.Authorization authorization -> authorization.holdAmount();
+            case EventRecord.Details.Settlement settlement -> settlement.amount();
+            default -> throw new AssertionError("Unsupported event passed validation");
+        };
         if (amount.currency() != account.currency()) {
             return ReplayError.Reason.CURRENCY_MISMATCH;
         }

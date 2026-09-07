@@ -23,6 +23,8 @@ public record ReplayError(EventRecord event, Reason reason) {
         INSUFFICIENT_AVAILABLE_BALANCE,
         UNKNOWN_AUTHORIZATION,
         AUTHORIZATION_NOT_ACTIVE,
-        SETTLEMENT_EXCEEDS_HOLD
+        SETTLEMENT_EXCEEDS_HOLD,
+        INVALID_REVERSAL_TARGET,
+        DEBIT_ALREADY_REVERSED
     }
 }

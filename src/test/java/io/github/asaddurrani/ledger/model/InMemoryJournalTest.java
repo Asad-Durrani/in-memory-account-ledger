@@ -13,7 +13,7 @@ class InMemoryJournalTest {
     void eventHistoryPreservesInsertionOrderAndRepeatedRecords() {
         AppendOnlyJournal<EventRecord> journal = new InMemoryJournal<>();
         var reversal = new EventRecord("E9", "ACC-001", 6, 2,
-                new EventRecord.Details.Reversal("E7"));
+                new EventRecord.Details.DebitReversal("E7"));
         var instalments = new EventRecord("E10", "ACC-002", 5, 5,
                 new EventRecord.Details.InstalmentCredit(Money.of(Currency.BHD, "10"), 3));
 

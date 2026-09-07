@@ -3,13 +3,17 @@ package io.github.asaddurrani.ledger.replay;
 import io.github.asaddurrani.ledger.model.Account;
 import io.github.asaddurrani.ledger.model.Authorization;
 import io.github.asaddurrani.ledger.model.AppendOnlyJournal;
+import io.github.asaddurrani.ledger.model.EventRecord;
 import io.github.asaddurrani.ledger.model.InMemoryJournal;
 import io.github.asaddurrani.ledger.model.LedgerEntry;
 import io.github.asaddurrani.ledger.money.Money;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Mutable state owned by one replay invocation. Ledger entries are append-only:
@@ -21,6 +25,8 @@ final class ReplayState {
     private record AuthorizationKey(String accountId, String authorizationId) {}
 
     private final Map<AuthorizationKey, Authorization> authorizations = new LinkedHashMap<>();
+    private final Map<String, EventRecord> acceptedDebits = new HashMap<>();
+    private final Set<String> reversedDebits = new HashSet<>();
     private final List<ReplayError> errors = new ArrayList<>();
 
     void reject(ReplayError error) {
@@ -33,6 +39,22 @@ final class ReplayState {
 
     List<LedgerEntry> ledgerEntries() {
         return ledgerEntries.records();
+    }
+
+    void recordAcceptedDebit(EventRecord event) {
+        acceptedDebits.put(event.eventId(), event);
+    }
+
+    EventRecord acceptedDebit(String eventId) {
+        return acceptedDebits.get(eventId);
+    }
+
+    boolean isReversed(String eventId) {
+        return reversedDebits.contains(eventId);
+    }
+
+    void markReversed(String eventId) {
+        reversedDebits.add(eventId);
     }
 
     Authorization authorization(String accountId, String authorizationId) {

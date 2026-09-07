@@ -59,6 +59,13 @@ to the authorized amount rather than assuming permission for additional spending
 
 ## Accounting policies
 
+### Reversal scope
+
+The prompt demonstrates reversal of a direct debit but does not define other
+reversal types. Support only previously accepted direct debits on the same account.
+Reject other targets; credit and settlement reversals require separate policies,
+including whether a reversed settlement would restore its hold.
+
 ### Backdated fee reassessment timing
 
 The rules do not say whether to reassess closed days immediately after a backdated

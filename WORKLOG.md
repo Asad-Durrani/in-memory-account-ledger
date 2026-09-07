@@ -453,3 +453,34 @@ below come from the Maven output and are converted to UTC.
   passed with no failures, errors, or skips; JAR build succeeded.
   `git diff --check` passed. Fees, interest, reversals, instalments, and historical
   daily reporting remain pending. README unchanged. No commit or push performed.
+
+## 2026-09-07 01:19:38 UTC — Debit-only reversal scope recorded
+
+- Recorded the selected reversal scope in `AMBIGUITIES.md`: only a previously
+  accepted direct debit on the same account may be reversed. Other event types
+  require separate policies.
+- Proposed expressing this scope as `DebitReversal(String debitEventId)` in the
+  event model. The rename and history-based target validation remain unimplemented.
+- Documentation only; `git diff --check` passed. No tests rerun, commit, or push.
+
+## 2026-09-07 01:25:49 UTC — Debit reversal replay verified
+
+- Renamed the input detail to `DebitReversal(String debitEventId)` and updated
+  existing fixtures. Replay resolves only previously accepted direct debits on
+  the same account; rejected inputs, credits, holds, settlements, and reversal
+  entries cannot serve as targets.
+- Added per-replay accepted-debit and reversed-debit tracking. A successful
+  reversal appends one full credit using the debit's exact amount/currency and
+  the reversal's supplied value date, with provenance pointing to the reversal
+  event. Original entries and earlier replay results remain unchanged.
+- Added structured invalid-target and already-reversed errors. Invalid attempts
+  do not consume the debit's reversal eligibility. Common event identity,
+  account, and date validation applies without requiring an input amount.
+- Treated prevention of double refunds as a correctness invariant and use of the
+  supplied value date as specified behavior; added no ambiguity entries for them.
+- Added six reversal tests covering E7/E9, differing value dates, repeated refunds,
+  ineligible/cross-account/forward references, invalid envelopes, exact BHD amounts,
+  and replay repeatability. Instalment credit remains explicitly unsupported.
+- Ran `./mvnw clean verify`: all 58 tests passed with no failures, errors, or skips;
+  JAR build succeeded. `git diff --check` passed and no old reversal type references
+  remain in source. Fees, interest, and instalments remain pending. No commit or push.

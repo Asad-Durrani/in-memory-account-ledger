@@ -23,7 +23,7 @@ class InMemoryLedgerTest {
         var e7 = new EventRecord("E7", aed.accountId(), 5, 2,
                 new EventRecord.Details.Debit(Money.of(Currency.AED, "620")));
         var e9 = new EventRecord("E9", aed.accountId(), 6, 2,
-                new EventRecord.Details.Reversal("E7"));
+                new EventRecord.Details.DebitReversal("E7"));
         var e10 = new EventRecord("E10", bhd.accountId(), 5, 5,
                 new EventRecord.Details.InstalmentCredit(Money.of(Currency.BHD, "10"), 3));
 
