@@ -1,13 +1,13 @@
-# Rejected claims and approaches
+# Rejected acceptance criteria
 
-Letters follow the acceptance criteria in `ORIGINAL_PROMPT`. Reject B, F, G, and H;
-F depends on the [selected fee policy](AMBIGUITIES.md#fees-after-reversal).
-The calculations below are policy-derived expectations.
+Criteria are numbered in their supplied order. Criteria 2, 6, 7, and 8 are
+rejected below; criterion 6 depends on the explicitly selected fee-retention
+policy.
 
-## B — E7 causes exactly one overdraft fee, on Day 2
+## 2 — E7 causes exactly one overdraft fee to be assessed, on Day 2
 
-Rejected: backdating affects subsequent closing balances too. With chronological
-reassessment, including preceding fees:
+Rejected. A backdated debit affects every subsequent closing balance, not only
+its value date. Reassessing chronologically and including earlier fees gives:
 
 | Day | AED balance before that day's fee | AED fee |
 | --- | ---: | ---: |
@@ -16,30 +16,36 @@ reassessment, including preceding fees:
 | 4 | -180.00 | 25.00 |
 | 5 | -205.00 | 25.00 |
 
-Three fees total AED 75.00 before E9.
+Days 2, 4, and 5 each require a fee. The total is AED 75.00 before E9.
 
-## F — E9 restores all balances and fees to their pre-E7 values
+## 6 — After E9, all balances and fees return to their pre-E7 values
 
-Rejected under the fee-retention policy: E9 offsets AED 620.00 but leaves the
-AED 75.00 fees. Day 5 becomes AED 390.00 instead of AED 465.00, before interest.
-Append-only permits refunds through new credits, so this rejection is a policy
-consequence, not an unconditional implication of the specification.
+Rejected under the selected policy: reversing a debit does not refund its
+previously assessed fees. E9 credits AED 620.00 to offset E7, leaving the three
+fees totaling AED 75.00. Day 5's revised balance is AED 390.00 rather than
+AED 465.00, before interest.
 
-## G — Each instalment is BHD 3.334
+The specification provides no fee-refund rule. Append-only history would permit
+separate compensating credits, so this rejection follows from retaining valid
+assessments, not from a claim that append-only forbids refunds.
 
-Rejected: three such entries total BHD 10.002, creating BHD 0.002. Use 3.334,
-3.333, and 3.333 to conserve BHD 10.000. Exact equality is impossible at BHD precision.
+## 7 — The three BHD instalments in E10 must each be BHD 3.334
 
-## H — Discard the interest rounding remainder
+Rejected. Three BHD 3.334 postings total BHD 10.002, exceeding E10's credit by
+BHD 0.002. Split the credit into BHD 3.334, 3.333, and 3.333 to conserve
+BHD 10.000. Exactly equal shares are impossible at the required precision.
 
-Rejected: the specification explicitly requires capitalization to equal the sum
-of rounded daily accruals. Under the selected policies those accruals sum to
-AED 0.93; rounding their unrounded aggregate instead gives AED 0.92. Capitalize
-the daily sum. Discarding a difference violates the requirement.
+## 8 — If the rounded daily interest accruals do not sum to the capitalized total, the remainder is discarded
 
-## Replaced approach — account-local journals
+Rejected. Capitalization must equal the exact sum of rounded daily accruals.
+The AED daily amounts are 0.10, 0.09, 0.25, 0.17, 0.16, and 0.16, totaling
+AED 0.93. Independently rounding the unrounded aggregate of AED 0.918 would
+produce AED 0.92. Book AED 0.93; discarding the difference violates the explicit
+sum requirement.
 
-Initially implemented account-local journals plus a shared sequence counter to
-recover global submission order. Replaced them with one ledger-owned event journal:
-it preserves the required order directly, including nonmonotonic processing dates,
-without coordinating separate histories.
+## Abandoned approach — account-local journals
+
+Initially implemented separate account journals and a shared sequence counter to
+recover global submission order. Replaced them with one ledger-owned event journal,
+which preserves the supplied order directly, including processing dates that move
+backward, without coordinating separate histories.

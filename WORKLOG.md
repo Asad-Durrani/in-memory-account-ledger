@@ -587,3 +587,21 @@ below come from the Maven output and are converted to UTC.
   inspected its complete output; final balances are AED 390.93 and BHD 10.008.
   `git diff --check` passed. The required intentionally failing design test remains
   pending. No commit or push performed.
+
+## 2026-09-07 01:59:13 UTC — Intentionally failing design test verified
+
+- Committed the daily reporting milestone as `fc4e196` with the message
+  `Report daily balances and historical authorization decisions`.
+- Added `IntentionalDesignFailure`: debit BHD 1.000 on Day 1, then credit
+  BHD 100.000 on Day 2. Accepted postings recover the balance to BHD 99.000,
+  but the unresolved Day 1 BHD fee prevents interest finalization through Day 6.
+- The inline-annotated assertion requests the broader capability to finalize
+  interest after recovery. It exposes the AED-only fee configuration limitation
+  without claiming a new prompt requirement or guessing a BHD fee/interest total.
+- Kept the class outside default Surefire naming patterns and documented its
+  explicit command in README and REJECTED. It is executable, not disabled.
+- Ran `./mvnw -B -ntp -Dtest=IntentionalDesignFailure test`: exactly one test
+  failed at the intended interest-finalization assertion, with no errors or skips.
+- Ran `./mvnw -B -ntp clean verify`: all 97 normal tests passed with no failures,
+  errors, or skips; the JAR built successfully. The new test and documentation
+  changes remain uncommitted. No push performed.

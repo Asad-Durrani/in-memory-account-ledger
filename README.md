@@ -1,7 +1,8 @@
 # In-Memory Account Ledger
 
-A Java project for an in-memory AED/BHD account ledger with value-dated postings,
-authorization holds, overdraft fees, and daily interest.
+An in-memory Java account ledger for AED and BHD, with value-dated postings,
+authorization holds, overdraft fees, and daily interest. It has no web layer,
+persistence, UI, or database.
 
 The core replays credits, debits, authorizations, settlements, debit reversals,
 and instalment credits in submission order. Exact `BigDecimal` money preserves
@@ -62,7 +63,6 @@ following Day 6's E9. It prints both accounts for each of Days 1 through 6:
 Balances and authorization states deliberately use different time perspectives:
 revised accounting balances versus original operational decisions. In particular,
 do not interpret the revised Day 2 balance as the balance used to approve Auth-A.
-No finalization of shortened replays is used to construct the report.
 
 Expected revised closing balances:
 
@@ -76,8 +76,26 @@ Expected revised closing balances:
 | 6 | 390.93 | 10.008 |
 
 Retained fees total AED 75.00 across Days 2, 4, and 5. Interest totals AED 0.93
-and BHD 0.008. The ordinary suite verifies these results; the separately required
-intentionally failing design test has not yet been added.
+and BHD 0.008. The ordinary suite verifies these results.
+
+## Intentionally failing design test
+
+Run the design counterexample separately:
+
+```sh
+./mvnw -Dtest=IntentionalDesignFailure test
+```
+
+Expect one assertion failure and a nonzero exit status. A BHD account goes from
+0.000 to -1.000 on Day 1, then receives 100.000 on Day 2. Although its booked
+balance recovers to 99.000, interest remains unfinalized through Day 6 because
+Day 1's overdraft requires an undefined BHD fee policy. The test asserts that
+interest can finalize after recovery and explains the missing currency-specific
+fee policy inline.
+
+`IntentionalDesignFailure` deliberately falls outside Surefire's default test
+class naming patterns, so `test` and `clean verify` run the normal regression
+suite. The explicit command runs the failing assertion.
 
 ## Source layout
 
